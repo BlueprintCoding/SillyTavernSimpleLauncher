@@ -1,4 +1,5 @@
-# Installation and Uninstallation Scripts
+# SillyTavernSimpleLauncher
+A launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
 
 This repository contains a set of Windows batch scripts to automate the installation and uninstallation of various software components. The scripts are designed to simplify the installation process and provide an easy way to uninstall the installed components.
 
@@ -6,7 +7,7 @@ THESE INSTALLERS COME WITH NO GUARANTEE OR WARRANTY, USE AT YOUR OWN RISK.
 
 ## Installation Script
 
-The installation script (`install.bat`) allows you to install the following software components:
+The installation scripts allow you to install the following software components:
 
 1. Chocolatey 
 2. GIT
@@ -23,11 +24,11 @@ The script checks if these components are already installed and skips the instal
 5. Prompts the user to choose between the main and dev branch of SillyTavern.
 6. Runs the `Start.bat` script from the SillyTavern directory.
 
-Please run the `install.bat` script with administrator privileges to ensure a successful installation.
+Please run the scripts with administrator privileges to ensure a successful installation.
 
 ## Uninstallation Script
 
-The uninstallation script (`uninstall.bat`) provides a way to remove the installed components. It prompts the user to confirm the uninstallation of each component and performs the necessary cleanup.
+The uninstallation scripts provide a way to remove the installed components. It prompts the user to confirm the uninstallation of each component and performs the necessary cleanup.
 
 The uninstall scripts allows you to remove the following components:
 
@@ -41,6 +42,7 @@ The uninstall scripts allows you to remove the following components:
 For each component, the script asks for user confirmation before proceeding with the uninstallation. It also provides an option to delete the SillyTavernDevBranch directory if it exists.
 
 Please run the `Uninstall SillyTavern.bat` script with administrator privileges and follow the prompts to uninstall the desired components.
+Please run the `Uninstall SillyTavernExtras.bat` script with administrator privileges and follow the prompts to uninstall the desired components.
 
 ## Usage
 
@@ -66,4 +68,5 @@ These scripts will ask for Administrator permissions, you must allow that for th
 8. Optional: Run the uninstallation script (`Uninstall SillyTavern.bat`) and (`Uninstall SillyTavernExtras.bat`) with administrator privileges to remove the installed components.
 
 Note: Please review the scripts and make any necessary modifications based on your specific requirements or system configurations.
+
 
