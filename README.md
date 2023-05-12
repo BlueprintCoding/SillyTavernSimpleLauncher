@@ -9,6 +9,7 @@ THESE INSTALLERS COME WITH NO GUARANTEE OR WARRANTY, USE AT YOUR OWN RISK.
 
 ### To install this, download the zip from this github, move it to your documents folder, unzip it and follow the scripts below.
 https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/releases
+
 The installation scripts allow you to install the following software components:
 
 1. Chocolatey 
