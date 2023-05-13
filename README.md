@@ -19,6 +19,7 @@ These scripts will ask for Administrator permissions, you must allow that for th
 
 1. Place the "SillyTavernSimpleLauncher" folder in your desired install folder. Ex: your documents folder.
 2. Follow the Installation Script instructions below. 
+3. After installing you can use the "Launch SillyTavern and Extras.bat" to launch SillyTavern and SillyTavernExtras. It will prompt you to choose which branch of ST you want to launch and if you want to launch extras. 
 
 Note: Please review the scripts and make any necessary modifications based on your specific requirements or system configurations.
 

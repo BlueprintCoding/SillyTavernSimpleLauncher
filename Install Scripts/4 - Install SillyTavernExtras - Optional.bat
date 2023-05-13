@@ -77,13 +77,36 @@ if exist "%SillyTavernExtrasPath%\venv" (
     REM Upgrade pip
     python -m pip install --upgrade pip
 
-    REM Install the required packages within the virtual environment
-    echo Installing required packages within the virtual environment...
-    pip install -r "%SillyTavernExtrasPath%\requirements.txt"
+    REM Install the required
+	    pip install -r "%SillyTavernExtrasPath%\requirements.txt"
 )
 
-REM Run the server
+REM Prompt user to select modules to enable
+echo Available modules:
+echo 1: caption
+echo 2: summarize
+echo 3: classify
+echo 4: keywords
+echo 5: prompt
+echo 6: sd
+echo 7: tts
+echo If no value is provided, caption, summarize, and classify will load by default.
+set /p "moduleSelection=Enter the module numbers to enable (separated by spaces ex: 1 2 5): "
+
+REM Set default modules if no selection is made or incorrect input
+set "enabledModules=caption,summarize,classify"
+for %%m in (%moduleSelection%) do (
+    if %%m==1 set "enabledModules=!enabledModules!,caption"
+    if %%m==2 set "enabledModules=!enabledModules!,summarize"
+    if %%m==3 set "enabledModules=!enabledModules!,classify"
+    if %%m==4 set "enabledModules=!enabledModules!,keywords"
+    if %%m==5 set "enabledModules=!enabledModules!,prompt"
+    if %%m==6 set "enabledModules=!enabledModules!,sd"
+    if %%m==7 set "enabledModules=!enabledModules!,tts"
+)
+
+REM Run the server with enabled modules
 echo Starting the server...
-start "" cmd /k "call "%SillyTavernExtrasPath%\venv\Scripts\activate.bat" && python "%SillyTavernExtrasPath%\server.py" --enable-modules=caption,summarize,classify"
+start "" cmd /k "call "%SillyTavernExtrasPath%\venv\Scripts\activate.bat" && python "%SillyTavernExtrasPath%\server.py" --enable-modules=%enabledModules%"
 
 pause
