@@ -28,7 +28,7 @@ if not exist "%~dp0..\%branchName%\" (
 )
 
 REM Prompt the user to choose whether to launch SillyTavernExtras
-echo Do you want to launch SillyTavernExtras?
+echo Do you want to launch SillyTavernExtras? (Launching Extras will ask you for Admin permission to launch)
 echo 1. Yes ("Extras will be installed if it is not already")
 echo 2. No
 set /p launchExtras=Enter choice (1 or 2): 
