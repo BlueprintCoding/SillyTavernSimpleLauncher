@@ -1,0 +1,6 @@
+#ignore the virtual enviroments
+venv/
+SillyTavern-extras/venv
+
+#ignore install path files.
+InstallPaths.txt
