@@ -48,12 +48,14 @@ start "" /b "%~dp0..\%branchName%\Start.bat"
 
 REM Check if SillyTavernExtras should be launched
 if "%launchExtras%"=="true" (
-    REM Define the path to the SillyTavernSimpleLauncher\Install Scripts directory
-    set "installScriptsPath=%~dp0\Install Scripts"
-    
-    REM Launch the "4 - Install SillyTavernExtras - Optional.bat" file
+    REM Define the path to the SillyTavernSimpleLauncher directory with wildcard
+    for /D %%I in ("%~dp0..\SillyTavernSimpleLauncher*") do (
+        set "launcherPath=%%I"
+    )
+
+    REM Launch the "4 - Install SillyTavernExtras - Optional.bat" file in a new command window
     echo Installing SillyTavernExtras...
-    start "" /b "%~dp0..\SillyTavernSimpleLauncher\Install Scripts\4 - Install SillyTavernExtras - Optional.bat"
+    start "SillyTavernExtras Installer" /b cmd /c "%~dp0\Install Scripts\4 - Install SillyTavernExtras - Optional.bat"
 )
 
 endlocal

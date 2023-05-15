@@ -56,23 +56,22 @@ if /I "%removeChoco%"=="Y" (
 :: Get the path of the parent folder
 for %%I in ("%~dp0..\..") do set "ParentFolder=%%~fI"
 
-:: Uninstall SillyTavern
+:: Uninstall SillyTavern Main Branch
 echo Do you want to uninstall the SillyTavern Main Branch? (Y/N)
 set /P uninstallSillyTavern=
 if /I "%uninstallSillyTavern%"=="Y" (
     echo Uninstalling SillyTavern...
-
     echo Deleting SillyTavern directory...
     rmdir /s /q "%ParentFolder%\SillyTavern-MainBranch"
-
-    echo Do you want to uninstall the SillyTavern Dev Preview? (Y/N)
-    set /P uninstallDevBranch=
-    if /I "%uninstallDevBranch%"=="Y" (
-        echo Deleting SillyTavernDevBranch directory...
-        rmdir /s /q "%ParentFolder%\SillyTavern-DevBranch"
-    )
 )
 
+:: Uninstall SillyTavern Dev Preview
+echo Do you want to uninstall the SillyTavern Dev Preview? (Y/N)
+set /P uninstallDevBranch=
+if /I "%uninstallDevBranch%"=="Y" (
+    echo Deleting SillyTavernDevBranch directory...
+    rmdir /s /q "%ParentFolder%\SillyTavern-DevBranch"
+)
 
 echo Uninstallation completed successfully.
 pause
