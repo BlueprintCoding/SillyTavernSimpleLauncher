@@ -33,11 +33,27 @@ echo Do you want to uninstall NodeJS? (Y/N)
 set /P uninstallNode=
 if /I "%uninstallNode%"=="Y" (
     echo Uninstalling NodeJS...
-    nvm uninstall --lts
-    nvm off
+    
+    :: Find currently installed version of Node
+    for /f "tokens=*" %%A in ('nvm list') do (
+        echo %%A | findstr /r /c:"^[^v]"
+        if not errorlevel 1 (
+            set "version=%%A"
+            goto UninstallNode
+        )
+    )
+    
+    echo No NodeJS version found. Skipping uninstallation.
+    goto UninstallNVM
+    
+    :UninstallNode
+    echo Uninstalling NodeJS version: !version!...
+    nvm uninstall !version!
+    rem nvm off (commented out as it's not necessary in the uninstallation process)
 )
 
 :: Uninstall NVM
+:UninstallNVM
 echo Do you want to uninstall NVM? (Y/N)
 set /P uninstallNvm=
 if /I "%uninstallNvm%"=="Y" (

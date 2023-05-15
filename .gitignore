@@ -4,3 +4,6 @@ SillyTavern-extras/venv
 
 #ignore install path files.
 InstallPaths.txt
+
+#Ignore old files
+old/

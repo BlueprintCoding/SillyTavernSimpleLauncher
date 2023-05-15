@@ -7,11 +7,10 @@ import os
 
 def open_web_link(link):
     webbrowser.open(link)
-
+    
 def run_script(script):
-    startup_info = subprocess.STARTUPINFO()
-    startup_info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    subprocess.Popen(script, startupinfo=startup_info, shell=True)
+    process = subprocess.Popen(script, creationflags=subprocess.CREATE_NEW_CONSOLE)
+    processes[script] = process
 
 def create_button(root, text, command):
     button = tk.Button(root, text=text, command=command, bg='#36393f', fg='white', padx=10, pady=5)
@@ -27,21 +26,38 @@ root.title("SillyTavernSimpleLauncher")
 root.configure(bg='#36393f')
 root.configure(padx=16, pady=16)
 
+# Dictionary to store the Popen objects
+processes = {}
+
 # Add a description label at the top
 description_label = tk.Label(root, text="Silly Tavern Simple Launcher", bg='#36393f', fg='white', font=("Helvetica", 16, "bold"))
 description_label.grid(row=0, column=0, columnspan=3, pady=10, sticky="nw")
 
-# Create a frame for the Launch section
-launch_frame = tk.LabelFrame(root, text="Launch", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"))
-launch_frame.grid(row=1, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
+# Create a frame for the Launch and Close section
+launch_frame = tk.LabelFrame(root, text="Launch and Close", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"))
+launch_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="nw")
 
-# Create a button to launch "Launch SillyTavern and Extras.bat"
-launch_button = create_button(launch_frame, "Launch SillyTavern and Extras", lambda: run_script("Launch SillyTavern and Extras.bat"))
-launch_button.pack(pady=(5, 0), padx=5)
+# Create buttons to launch "Launch ST Main.bat"
+launch_main_button = create_button(launch_frame, "Launch ST Main", lambda: run_script("Launch Scripts/Launch ST Main.bat"))
+launch_main_button.grid(row=0, column=0, padx=5, pady=(5, 0))
+
+# Create a button to launch "Launch ST Dev.bat"
+launch_dev_button = create_button(launch_frame, "Launch ST Dev", lambda: run_script("Launch Scripts/Launch ST Dev.bat"))
+launch_dev_button.grid(row=0, column=1, padx=5, pady=(5, 0))
+
+# Create a button to launch "Launch ST Extras.bat"
+launch_extras_button = create_button(launch_frame, "Launch ST Extras", lambda: run_script("Launch Scripts/Launch ST Extras.bat"))
+launch_extras_button.grid(row=0, column=2, padx=5, pady=(5, 0))
+
+# Create a button to close ST.bat
+close_button = create_button(launch_frame, "Close SillyTavern", lambda: run_script("Launch Scripts/Close ST.bat"))
+close_button.grid(row=1, column=1, padx=5, pady=(5, 0))
+
+
 
 # Create a frame for the Support section
 support_frame = tk.LabelFrame(root, text="Support", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"))
-support_frame.grid(row=1, column=1, columnspan=3, padx=10, pady=10, sticky="nw")
+support_frame.grid(row=1, column=1, padx=55, pady=10, sticky="nw")
 
 # Create buttons for the web links
 button1 = create_button(support_frame, "SillyTavern GitHub", lambda: open_web_link("https://github.com/Cohee1207/SillyTavern"))
@@ -98,7 +114,8 @@ tool_scripts = [
     ("Update and Backup Scripts/Backup SillyTavern Files.bat", "Backup SillyTavern Files"),
     ("Update and Backup Scripts/Update SillyTavern.bat", "Update SillyTavern"),
     ("Update and Backup Scripts/Update SillyTavernSimpleLauncher.bat", "Update SillyTavernSimpleLauncher"),
-    ("Optimization/OptmizePromptGui.py", "OptimizePrompt GUI")
+    ("Optimization/OptmizePromptGui.py", "OptimizePrompt GUI"),
+    ("Install Scripts/Check Dependencies.bat", "Check Dependencies")
 ]
 
 row = 0
@@ -106,7 +123,7 @@ for script, label_text in tool_scripts:
     label = create_label(tools_frame, label_text)
     label.grid(row=row, column=0, sticky="nw")
     if script.endswith(".bat"):
-        button = create_button(tools_frame, "Run", lambda file=script: run_script(file))
+        button = create_button(tools_frame, "Run", lambda file=script: subprocess.Popen(file, creationflags=subprocess.CREATE_NEW_CONSOLE))
     else:
         button = create_button(tools_frame, "Run", lambda file=script: run_script(f'python {file}'))
     button.grid(row=row, column=1, padx=5, pady=(5, 5), sticky="nw")
@@ -117,9 +134,10 @@ for script, label_text in tool_scripts:
     
     row += 2
 
+
 # Create a frame for the Uninstall section
 uninstall_frame = tk.LabelFrame(root, text="Uninstall Scripts", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"))
-uninstall_frame.grid(row=4, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
+uninstall_frame.grid(row=4, column=0, columnspan=1, padx=0, pady=10, sticky="nw")
 
 # Create labels and buttons for each uninstall script
 uninstall_scripts = [

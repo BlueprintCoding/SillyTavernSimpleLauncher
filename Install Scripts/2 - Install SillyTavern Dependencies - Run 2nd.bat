@@ -28,9 +28,9 @@ if '%errorlevel%' EQU '0' (
 )
 
 :: Install Node.js
-echo Installing Node.js LTS...
-nvm install lts
-nvm use lts
+echo Installing Node.js...
+nvm install 18
+nvm use 18
 
 :skipInstallation
 echo Process completed successfully. Run "3a - Install SillyTavern - Main Branch.bat" to install the most stable recent release. Run "3b - Install SillyTavern - Developer Preview Branch" to install the latest developer preview.
