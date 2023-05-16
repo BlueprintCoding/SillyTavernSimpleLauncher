@@ -33,6 +33,24 @@ if %errorlevel% equ 0 (
     @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 )
 
+:: Check if Git is already installed
+git --version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo Git is already installed.
+) else (
+    echo Installing Git...
+    choco install git -y
+)
+
+:: Check if NVM is already installed
+nvm version >nul 2>&1
+if %errorlevel% equ 0 (
+    echo NVM is already installed.
+) else (
+    echo Installing NVM...
+    choco install nvm -y
+)
+
 
 REM Check if Python 3.10 is installed
 python --version 2>nul
@@ -60,8 +78,20 @@ if %errorlevel% equ 0 (
     python -m pip install tkinter
 )
 
+:: Check if pywin32 is installed
+python -c "import win32api" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo pywin32 is already installed.
+) else (
+    echo Installing pywin32...
+    python -m pip install pywin32
+)
+
 REM Launch the "STLauncherGui.py" GUI
-start "" python STLauncherGui.py
+::start "" python STLauncherGui.py
 
 REM Close the command window after a successful install or check
+echo Please check that all dependencies installed correctly without errors
+echo If you get erorrs please close and run the "RUN FIRST Install GUI Dependencies.bat" file again.
+pause
 exit

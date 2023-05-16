@@ -28,29 +28,18 @@ if /I "%uninstallGit%"=="Y" (
     rmdir /s /q "C:\Program Files\Git"
 )
 
-:: Uninstall NodeJS
-echo Do you want to uninstall NodeJS? (Y/N)
+:: Load NVM environment
+echo Loading NVM environment...
+CALL "%SystemDrive%\ProgramData\nvm\nvm.exe" use 18
+
+:: Uninstall Node.js
+echo Do you want to uninstall Node.js? (Y/N)
 set /P uninstallNode=
 if /I "%uninstallNode%"=="Y" (
-    echo Uninstalling NodeJS...
-    
-    :: Find currently installed version of Node
-    for /f "tokens=*" %%A in ('nvm list') do (
-        echo %%A | findstr /r /c:"^[^v]"
-        if not errorlevel 1 (
-            set "version=%%A"
-            goto UninstallNode
-        )
-    )
-    
-    echo No NodeJS version found. Skipping uninstallation.
-    goto UninstallNVM
-    
-    :UninstallNode
-    echo Uninstalling NodeJS version: !version!...
-    nvm uninstall !version!
-    rem nvm off (commented out as it's not necessary in the uninstallation process)
+    echo Uninstalling Node.js...
+    choco uninstall nodejs -y
 )
+
 
 :: Uninstall NVM
 :UninstallNVM

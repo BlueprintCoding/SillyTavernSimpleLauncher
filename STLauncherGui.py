@@ -9,7 +9,33 @@ import win32api
 import win32con
 import win32event
 import win32process
+import atexit
+import win32api
+import win32con
 
+def simulate_alt_f4():
+    # Press the Alt key
+    win32api.keybd_event(win32con.VK_MENU, 0, 0, 0)
+    
+    # Press the F4 key
+    win32api.keybd_event(win32con.VK_F4, 0, 0, 0)
+    
+    # Release the F4 key
+    win32api.keybd_event(win32con.VK_F4, 0, win32con.KEYEVENTF_KEYUP, 0)
+    
+    # Release the Alt key
+    win32api.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)
+    
+    
+def write_pid_to_file():
+    pid = str(os.getpid())
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    pid_file = os.path.join(script_dir, "py_pid.txt")
+    with open(pid_file, "w") as file:
+        file.write(pid)
+
+# Register write_pid_to_file() to be called on program exit
+atexit.register(write_pid_to_file)
 
 def open_web_link(link):
     webbrowser.open(link)
@@ -18,17 +44,11 @@ def open_sillytavern_web():
     webbrowser.open("http://localhost:8000/")
     
 def run_script(script):
-    if script.endswith(".bat"):
-        if script in ["Install Scripts/1 - Install SillyTavern Dependencies - Run 1st.bat",
-                      "Install Scripts/2 - Install SillyTavern Dependencies - Run 2nd.bat"]:
-            run_script_admin(script)
-        else:
-            subprocess.Popen(["cmd", "/c", "start", "/wait", script], shell=True)
-    else:
-        process = subprocess.Popen(script, creationflags=subprocess.CREATE_NEW_CONSOLE)
-        processes[script] = process
+    process = subprocess.Popen(script, creationflags=subprocess.CREATE_NEW_CONSOLE)
+    processes[script] = process
 
 def run_script_admin(script):
+    
     info = win32process.CreateProcess(
         None,
         f'cmd /c "{script}"',
@@ -42,7 +62,6 @@ def run_script_admin(script):
     )
     hProcess, hThread, dwProcessId, dwThreadId = info
     win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
-
 
 def create_button(root, text, command):
     button = tk.Button(root, text=text, command=command, bg='#b5bac1', fg='#313338', padx=10, pady=5)
@@ -58,6 +77,7 @@ root = tk.Tk()
 root.title("SillyTavern Simple Launcher")
 root.configure(bg='#36393f')
 root.configure(padx=16, pady=16)
+root.after(0, write_pid_to_file)
 
 # Dictionary to store the Popen objects
 processes = {}
@@ -87,7 +107,7 @@ launch_frame = tk.LabelFrame(root, text="Launch and Close", bg='#36393f', fg='wh
 launch_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="nw")
 
 # Create buttons to launch "Launch ST Main.bat"
-launch_main_button = create_button(launch_frame, "Launch ST Main", lambda: run_script("Launch Scripts/Launch ST Main.bat"))
+launch_main_button = create_button(launch_frame, "Launch ST Main", lambda: run_script("Launch Scripts/Launch ST Main.bat")) 
 launch_main_button.grid(row=0, column=0, padx=5, pady=(5, 0), sticky="nw")
 launch_main_button.configure(width=20)
 
@@ -129,18 +149,21 @@ install_frame.grid(row=3, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
 
 # Create labels and buttons for each install script
 install_scripts = [
-    ("Install Scripts/1 - Install SillyTavern Dependencies - Run 1st.bat", "1 - Install SillyTavern Dependencies - Run 1st"),
-    ("Install Scripts/2 - Install SillyTavern Dependencies - Run 2nd.bat", "2 - Install SillyTavern Dependencies - Run 2nd"),
-    ("Install Scripts/3a - Install SillyTavern - Main Branch.bat", "3a - Install SillyTavern - Main Branch"),
-    ("Install Scripts/3b - Install SillyTavern - Developer Preview Branch.bat", "3b - Install SillyTavern - Developer Preview Branch"),
-    ("Install Scripts/4 - Install SillyTavernExtras - Optional.bat", "4 - Install SillyTavernExtras")
+    ("Install Scripts/1 - Install SillyTavern Dependencies - Run 1st.bat", "Install SillyTavern Dependencies"),
+    ("Install Scripts/2a - Install SillyTavern - Main Branch.bat", "Install SillyTavern - Main Branch"),
+    ("Install Scripts/2b - Install SillyTavern - Developer Preview Branch.bat", "Install SillyTavern - Developer Preview Branch (optional)"),
+    ("Install Scripts/3 - Install SillyTavernExtras - Optional.bat", "Install SillyTavernExtras (optional)"),
+    ("Install Scripts/Check Dependencies.bat", "Check Dependencies")
 ]
 
 row = 0
 for script, label_text in install_scripts:
     label = create_label(install_frame, label_text)
     label.grid(row=row, column=0, sticky="nw")
-    button = create_button(install_frame, "Run", lambda file=script: run_script(file))
+    if script in ["Install Scripts/2 - Install SillyTavern Dependencies - Run 2nd.bat"]:
+        button = create_button(install_frame, "Run", lambda file=script: run_script_admin(file))
+    else:
+         button = create_button(install_frame, "Run", lambda file=script: subprocess.Popen(file, creationflags=subprocess.CREATE_NEW_CONSOLE))
     button.grid(row=row, column=1, padx=5, pady=(5, 5), sticky="nw")
     
     # Add a separating line
@@ -150,7 +173,7 @@ for script, label_text in install_scripts:
     row += 2
 
 tools_frame = tk.LabelFrame(root, text="Tools", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
-tools_frame.place(x=355, y=267)
+tools_frame.place(x=385, y=267)
 
 
 # Create labels and buttons for each tool script
@@ -159,7 +182,6 @@ tool_scripts = [
     ("Update and Backup Scripts/Update SillyTavern.bat", "Update SillyTavern"),
     ("Update and Backup Scripts/Update SillyTavernSimpleLauncher.bat", "Update SillyTavernSimpleLauncher"),
     ("Optimization/OptmizePromptGui.py", "OptimizePrompt GUI"),
-    ("Install Scripts/Check Dependencies.bat", "Check Dependencies")
 ]
 
 row = 0
@@ -227,34 +249,44 @@ button5 = create_button(support_frame, "sillytavernai.com", lambda: open_web_lin
 button5.grid(row=1, column=1, padx=5, pady=5, sticky="nw")
 button5.configure(width=20)
 
+def update_install_paths():
+    # Get the parent directory of the GUI file
+    parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+    # List of SillyTavern install directories
+    install_directories = [
+        "SillyTavern-MainBranch",
+        "SillyTavern-DevBranch",
+        "SillyTavern-extras",
+        "SillyTavern-FileBackups"
+    ]
+
+    # Check if each install directory exists
+    install_paths_text = ""
+    for directory in install_directories:
+        path = os.path.join(parent_directory, directory)
+        if os.path.exists(path):
+            install_paths_text += f"{directory}: {path}\n"
+        else:
+            install_paths_text += f"{directory}: Not found\n"
+
+    # Update the label with the new install paths
+    install_paths_label.configure(text=install_paths_text)
+
+    # Schedule the next update after 10 seconds
+    root.after(10000, update_install_paths)
+
+
 # Create a frame for the Install Paths section
-install_paths_frame = tk.LabelFrame(root, text="Install Paths:", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
+install_paths_frame = tk.LabelFrame(root, text="Install Paths:", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"), borderwidth=4)
 install_paths_frame.grid(row=6, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
 
-# Get the parent directory of the GUI file
-parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-# List of SillyTavern install directories
-install_directories = [
-    "SillyTavern-MainBranch",
-    "SillyTavern-DevBranch",
-    "SillyTavern-extras",
-    "SillyTavern-FileBackups"
-]
-
-# Check if each install directory exists
-install_paths_text = ""
-for directory in install_directories:
-    path = os.path.join(parent_directory, directory)
-    if os.path.exists(path):
-        install_paths_text += f"{directory}: {path}\n"
-    else:
-        install_paths_text += f"{directory}: Not found\n"
-
 # Create a label to display the install paths
-install_paths_label = create_label(install_paths_frame, install_paths_text)
+install_paths_label = create_label(install_paths_frame, "")
 install_paths_label.pack()
 
+# Start the initial update
+update_install_paths()
 
 # Start the GUI event loop
 root.mainloop()

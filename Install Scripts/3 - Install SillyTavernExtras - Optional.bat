@@ -35,6 +35,16 @@ if %errorlevel% neq 0 (
     choco install python310 -y
 )
 
+REM Check if SillyTavern-extras is already installed
+echo Checking if SillyTavern-extras is already installed...
+if exist "%SillyTavernExtrasPath%" (
+    echo SillyTavern-extras is already installed. Skipping clone...
+) else (
+    REM Clone the repository into the user's root folder
+    echo Cloning the SillyTavernExtras...
+    git clone https://github.com/Cohee1207/SillyTavern-extras "%SillyTavernExtrasPath%"
+)
+
 REM Check if the virtual environment with requirements is already created
 echo Checking if the virtual environment with requirements is already created...
 if exist "%SillyTavernExtrasPath%\venv" (

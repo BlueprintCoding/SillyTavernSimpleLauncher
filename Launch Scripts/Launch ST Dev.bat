@@ -1,13 +1,6 @@
 @echo off
 setlocal
 
-rem Check if running in a new/fresh console window
-tasklist /FI "WINDOWTITLE eq %~nx0" 2>NUL | find /I "%~nx0" >NUL
-if not errorlevel 1 (
-    rem Running in the py.exe console, open in a new console window
-    start "" "%~dp0%~nx0"
-    exit
-)
 
 set branchName=SillyTavern-DevBranch
 

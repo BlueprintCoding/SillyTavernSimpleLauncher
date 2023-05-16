@@ -19,32 +19,22 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-:: Check if Chocolatey is already installed
-choco -v >nul 2>&1
-if %errorlevel% equ 0 (
-    echo Chocolatey is already installed.
-) else (
-    echo Installing Chocolatey...
-    @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+:: Check if Node.js is already installed
+echo Checking if Node.js is installed...
+node --version > nul 2>&1
+if '%errorlevel%' EQU '0' (
+    echo Node.js is already installed. Skipping installation.
+    goto skipInstallation
 )
 
-:: Check if Git is already installed
-git --version >nul 2>&1
-if %errorlevel% equ 0 (
-    echo Git is already installed.
-) else (
-    echo Installing Git...
-    choco install git -y
-)
+:: Load NVM environment
+echo Loading NVM environment...
+CALL "%SystemDrive%\ProgramData\nvm\nvm.exe" use 18
 
-:: Check if NVM is already installed
-nvm version >nul 2>&1
-if %errorlevel% equ 0 (
-    echo NVM is already installed.
-) else (
-    echo Installing NVM...
-    choco install nvm -y
-)
+:: Install Node.js
+echo Installing Node.js...
+choco install nodejs-lts -y
 
-echo Close the terminal and run the second script "2 - Install SillyTavern Dependencies - Run 2nd.bat".
+:skipInstallation
+echo Process completed successfully. Run "3a - Install SillyTavern - Main Branch.bat" to install the most stable recent release. Run "3b - Install SillyTavern - Developer Preview Branch" to install the latest developer preview.
 pause
