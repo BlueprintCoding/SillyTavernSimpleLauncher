@@ -14,16 +14,6 @@ if exist "%SillyTavernPath%" (
     echo Cloning SillyTavern...
     git clone https://github.com/Cohee1207/SillyTavern -b dev "%SillyTavernPath%"
 
-:: Check if InstallPaths.txt exists
-if not exist "%~dp0..\InstallPaths.txt" (
-    echo Creating InstallPaths.txt...
-    echo SillyTavern Dev Branch installed at: %SillyTavernPath% > "%~dp0..\InstallPaths.txt"
-) else (
-    echo Appending to InstallPaths.txt...
-    echo SillyTavern Dev Branch installed at: %SillyTavernPath% >> "%~dp0..\InstallPaths.txt"
-)	
-)
-
 :: Go to the SillyTavern directory and run Start.bat in a new window
 cd /d "%SillyTavernPath%"
 echo Running Start.bat...

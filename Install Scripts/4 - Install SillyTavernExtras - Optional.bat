@@ -35,25 +35,6 @@ if %errorlevel% neq 0 (
     choco install python310 -y
 )
 
-REM Check if SillyTavern-extras is already installed
-echo Checking if SillyTavern-extras is already installed...
-if exist "%SillyTavernExtrasPath%" (
-    echo SillyTavern-extras is already installed. Skipping clone...
-) else (
-    REM Clone the repository into the user's root folder
-    echo Cloning the SillyTavernExtras...
-    git clone https://github.com/Cohee1207/SillyTavern-extras "%SillyTavernExtrasPath%"
-	
-    :: Check if InstallPaths.txt exists
-    if not exist "%~dp0..\InstallPaths.txt" (
-        echo Creating InstallPaths.txt...
-        echo SillyTavernExtras installed at: %SillyTavernExtrasPath% > "%~dp0..\InstallPaths.txt"
-    ) else (
-        echo Appending to InstallPaths.txt...
-        echo SillyTavernExtras installed at: %SillyTavernExtrasPath% >> "%~dp0..\InstallPaths.txt"
-    )
-)
-
 REM Check if the virtual environment with requirements is already created
 echo Checking if the virtual environment with requirements is already created...
 if exist "%SillyTavernExtrasPath%\venv" (
@@ -115,4 +96,3 @@ echo Starting the server...
 start "" /B cmd /C "call "%SillyTavernExtrasPath%\venv\Scripts\activate.bat" && python "%SillyTavernExtrasPath%\server.py" --enable-modules=%enabledModules%"
 
 pause
-

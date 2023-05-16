@@ -42,6 +42,14 @@ if %errorlevel% neq 0 (
     choco install python310 -y
 )
 
+:: Check if Pillow is already installed
+python -c "import PIL" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo Pillow is already installed.
+) else (
+    echo Installing Pillow...
+    python -m pip install pillow
+)
 
 :: Check if Tkinter is already installed
 python -c "import tkinter" >nul 2>&1

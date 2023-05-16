@@ -27,8 +27,9 @@ def update_config():
     # Set the configuration file path based on the branch selection
     if branch == "Select Branch":
         messagebox.showerror("Error: Select a branch.")
+        return
     elif branch == "Main Branch":
-        config_file = dev_branch_config_file
+        config_file = main_branch_config_file
     elif branch == "Dev Branch":
         config_file = dev_branch_config_file
     else:

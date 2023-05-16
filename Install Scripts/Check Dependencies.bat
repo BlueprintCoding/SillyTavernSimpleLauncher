@@ -66,6 +66,13 @@ if %errorlevel% neq 0 (
     echo nltk is installed.
 )
 
+REM Check if Pillow is installed
+python -c "import PIL" > nul 2>&1
+if %errorlevel% neq 0 (
+    echo Pillow is not installed. Run "RUN FIRST -RunGUI-Launcher.bat" to install.
+) else (
+    echo Pillow is installed.
+)
 
 echo Dependencies check complete.
 pause
