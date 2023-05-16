@@ -5,37 +5,12 @@ import webbrowser
 import subprocess
 import sys
 import os
-import win32api
 import win32con
 import win32event
 import win32process
-import atexit
 import win32api
 import win32con
 
-def simulate_alt_f4():
-    # Press the Alt key
-    win32api.keybd_event(win32con.VK_MENU, 0, 0, 0)
-    
-    # Press the F4 key
-    win32api.keybd_event(win32con.VK_F4, 0, 0, 0)
-    
-    # Release the F4 key
-    win32api.keybd_event(win32con.VK_F4, 0, win32con.KEYEVENTF_KEYUP, 0)
-    
-    # Release the Alt key
-    win32api.keybd_event(win32con.VK_MENU, 0, win32con.KEYEVENTF_KEYUP, 0)
-    
-    
-def write_pid_to_file():
-    pid = str(os.getpid())
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    pid_file = os.path.join(script_dir, "py_pid.txt")
-    with open(pid_file, "w") as file:
-        file.write(pid)
-
-# Register write_pid_to_file() to be called on program exit
-atexit.register(write_pid_to_file)
 
 def open_web_link(link):
     webbrowser.open(link)
@@ -70,14 +45,16 @@ def create_button(root, text, command):
 def create_label(root, text):
     label = tk.Label(root, text=text, bg='#36393f', fg='white')
     return label
-	
+    
+# Create a function to close the GUI
+def close_gui():
+    root.destroy()
 
 # Create the main window
 root = tk.Tk()
 root.title("SillyTavern Simple Launcher")
 root.configure(bg='#36393f')
 root.configure(padx=16, pady=16)
-root.after(0, write_pid_to_file)
 
 # Dictionary to store the Popen objects
 processes = {}
@@ -93,7 +70,7 @@ frames = [ImageTk.PhotoImage(frame.resize((150, 150))) for frame in ImageSequenc
 
 # Create a label widget to display the animated GIF
 label2 = tk.Label(root)
-label2.place(x=600, y=0)
+label2.place(x=600, y=13)
 
 def update_animation(index):
     frame = frames[index]
@@ -287,6 +264,15 @@ install_paths_label.pack()
 
 # Start the initial update
 update_install_paths()
+
+# Create a frame for the Close section
+close_frame = tk.LabelFrame(root, text="Launcher Controls:", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"), borderwidth=4)
+close_frame.grid(row=6, column=1, padx=10, pady=10, sticky="nw")
+
+# Create a button to close the GUI
+close_button = create_button(close_frame, "Close SillyTavern Simple Launcher", close_gui)
+close_button.pack()
+
 
 # Start the GUI event loop
 root.mainloop()
