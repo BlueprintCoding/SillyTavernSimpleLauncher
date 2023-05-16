@@ -8,14 +8,8 @@ set extras_dir=%ParentFolder%\SillyTavern-extras
 
 echo Updating SillyTavern instances:
 echo.
+echo We recommend running the backup function before updating. 
 
-:PromptUpdateMain
-set /p update_main=Do you want to backup your Character, Chats, etc? (Y/N):
-if /i "%update_main%"=="Y" (
-    echo Backing up files... Please wait to confirm backup in "\%ParentFolder%\ST-Backups"
-    call "%~dp0Backup SillyTavern Files.bat"
-    echo.
-)
 
 :PromptUpdateMainBranch
 set /p update_main=Update main branch instance? (Y/N):

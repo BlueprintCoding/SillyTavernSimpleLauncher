@@ -59,7 +59,7 @@ if /I "%removeChoco%"=="Y" (
 )
 
 :: Get the path of the parent folder
-for %%I in ("%~dp0..\..") do set "ParentFolder=%%~fI"
+for %%I in ("%~dp0..\..\..") do set "ParentFolder=%%~fI"
 
 :: Uninstall SillyTavern Main Branch
 echo Do you want to uninstall the SillyTavern Main Branch? (Y/N)
