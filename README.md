@@ -1,13 +1,13 @@
 # SillyTavernSimpleLauncher
-A launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
+A GUI launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
 
-This repository contains a set of Windows batch scripts to automate the installation and uninstallation of various software components. The scripts are designed to simplify the installation process and provide an easy way to uninstall the installed components.
+This repository contains a set of Windows batch scripts and python files to automate the installation and uninstallation of various software components. The scripts are designed to simplify the installation process and provide an easy way to uninstall the installed components.
 
 THESE INSTALLERS COME WITH NO GUARANTEE OR WARRANTY, USE AT YOUR OWN RISK.
 
 ## Usage
 
-### To install this, download the zip from this github, move it to your documents folder, unzip it and follow the scripts below.
+### To install this, download the zip from this github, move it to the folder of your choice, unzip it and follow the scripts below.
 https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/releases
 OR
 If you have GIT installed you can go to the directory that you want to install the Launcher in and run the following command
@@ -19,7 +19,7 @@ These scripts will ask for Administrator permissions, you must allow that for th
 
 1. Place the "SillyTavernSimpleLauncher" folder in your desired install folder. Ex: your documents folder.
 2. Follow the Installation Script instructions below. 
-3. After installing you can use the "Launch SillyTavern and Extras.bat" to launch SillyTavern and SillyTavernExtras. It will prompt you to choose which branch of ST you want to launch and if you want to launch extras. 
+3. After installing you can use the GUI to install, manage, and uninstall Sillytavern and Extras. It also includes some tools like configurations editing and prompt optimization. 
 
 Note: Please review the scripts and make any necessary modifications based on your specific requirements or system configurations.
 
@@ -27,88 +27,54 @@ Note: Please review the scripts and make any necessary modifications based on yo
 ## Installation Scripts (In the Install Scripts folder)
 RUN THESE SCRIPTS IN ORDER! SillyTavern will be installed in the parent folder of the "SillyTavernSimpleLauncher" ex if you placed it in your Documents folder SillyTavern will be installed in the documents folder. 
 
-SCRIPT1: "1 - Install SillyTavern Dependencies - Run 1st.bat"
+SCRIPT1: "RUN FIRST Install GUI Dependencies.bat"
 ----
 Installs:
 1. Chocolatey 
 2. GIT
 3. NVM (Node Version Manager)
+4. Python (imports Pillow, Tkinter, win32api)
 
 After the script finishes running close the command prompt and run the next script
 ----
 
-SCRIPT2: "2 - Install SillyTavern Dependencies - Run 2nd.bat"
+SCRIPT2: "RunGUI-Launcher.bat"
 ----
 Installs:
-1. NodeJS
-
-After the script finishes running close the command prompt.
-You know can have two choices, 
--you can install the stable Main Branch of SillyTavern by running the script:
- 	3a - Install SillyTavern - Main Branch.bat
-AND/OR
--you can install the stable Main Branch of SillyTavern by running the script:
-	3b - Install SillyTavern - Developer Preview Branch.bat
+1. Nothing! Just checks that the required dependencies are installed and launches the Launcher GUI"
 ----
 
-SCRIPT3a: "3a - Install SillyTavern - Main Branch.bat"
+Launcher GUI: "STLauncherGui.py"
 ----
-Installs:
-1. Creates a directory called "SillyTavern-MainBranch" in the parent folder of "SillyTavernSimpleLauncher"
-2. Clones "https://github.com/Cohee1207/SillyTavern -b main" to that folder
-3. Launches SillyTavern by calling the "Start.bat" file
----
+Install Scripts:
+The launcher has buttons to Install SillyTavern and Extras. Make sure to launch them in order from top to bottom, waiting for each to finish before launching the next. 
+Command windows will open when you hit run, some may require Administrator access, allow that or it will not work.
 
-SCRIPT3b: "3b - Install SillyTavern - Developer Preview Branch.bat"
-----
-Installs:
-1. Creates a directory called "SillyTavern-DevBranch" in the parent folder of "SillyTavernSimpleLauncher"
-2. Clones "https://github.com/Cohee1207/SillyTavern -b dev" to that folder
-3. Launches SillyTavern by calling the "Start.bat" file
----
+--
 
-SCRIPT4: "4 - Install SillyTavernExtras - Optional.bat"
-----
-Installs:
-1. Checks to see if you have python 3.10 or above installed and installs it if you do not
-2. Creates a directory called "SillyTavern-extras" in the parent folder of "SillyTavernSimpleLauncher"
-3. Clones "https://github.com/Cohee1207/SillyTavern-extras" to that folder
-4. Creates a virtual enviroment via venv in the "SillyTavern-extras" folder and installs all of the dependencies from requirements.txt there.
-5. Activates the virtual enviroment
-6. Launches SillyTavernExtras server (the first run can take some time as it installs additional dependencies)
----
+Tools:
+The launcher has buttons to:
+1) Backup your SillyTavern files: Backs up file such as chats and characters, they will save in the parent directory in a folder called "SillyTavern-FileBackups"
+2) Update SillyTavern: Gives you the option to update the main and dev branches of SillyTavern to the latest version for the repo using GIT Pull
+3) Update SillyTavern: Gives you the option to update the SillyTavern Simple Launcher to the latest version for the repo using GIT Pull
+4) OptimizePrompt Gui: Opens a new window to allow you to run a stemming function on your prompts/char info to reduce the size. Works best for OpenAI and Poe api
 
-----------------------------------------------------------------
+--
 
-## Uninstallation Scripts (In the Uninstall Scripts folder)
+Uninstall Script:
+1)Uninstall SillyTavern: gives you options to uninstall both branches of SillyTavern and their dependencies
+2)Uninstall SillyTavern: gives you options to uninstall SillyTavern Extras
 
-The uninstallation scripts provide a way to remove the installed components. It prompts the user to confirm the uninstallation of each component and performs the necessary cleanup.
+--
 
-SCRIPT1: "Uninstall SillyTavern.bat"
-----
-The uninstall scripts allows you to remove the following components (be advised removing dependencies like GIT, NodeJS and NVM can effect other programs on your computer if they depend on them) For each component, the script asks for user confirmation before proceeding with the uninstallation. :
+Support:
+Links that open your web browser to various support resources
 
-1. GIT
-2. NodeJS
-3. NVM
-4. Chocolatey
-5. SillyTavern-MainBranch
-6. SillyTavern-DevBranch
+--
 
-After the script finishes running close the command prompt 
-----
-
-SCRIPT2: "Uninstall SillyTavernExtras.bat"
-----
-The uninstall scripts allows you to remove the following components: 
-
-1. venv virtual enviroment with dependencies
-2. SillyTavern-extras
-
-After the script finishes running close the command prompt 
+Install Paths:
+Checks your system to show where SillyTavern, Extras, and Backups are currently installed.
 ----
 
 ----------------------------------------------------------------
-
-
 

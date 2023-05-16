@@ -6,14 +6,7 @@ set main_dir=%ParentFolder%\SillyTavernSimpleLauncher
 
 echo Updating SillyTavernSimpleLauncher instance:
 echo.
-
-:PromptUpdateMain
-set /p update_main=Do you want to backup your Character, Chats, etc? (Y/N):
-if /i "%update_main%"=="Y" (
-    echo Backing up files... Please wait to confirm backup in "\%ParentFolder%\ST-Backups"
-    call "%~dp0Backup SillyTavern Files.bat"
-    echo.
-)
+echo We recommend running the backup function before updating. 
 
 :PromptUpdateMainBranch
 set /p update_main=Update the SillyTavernSimpleLauncher instance? (Y/N):

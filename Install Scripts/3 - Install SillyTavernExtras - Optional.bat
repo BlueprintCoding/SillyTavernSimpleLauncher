@@ -43,22 +43,12 @@ if exist "%SillyTavernExtrasPath%" (
     REM Clone the repository into the user's root folder
     echo Cloning the SillyTavernExtras...
     git clone https://github.com/Cohee1207/SillyTavern-extras "%SillyTavernExtrasPath%"
-	
-:: Check if InstallPaths.txt exists
-if not exist "%~dp0..\InstallPaths.txt" (
-    echo Creating InstallPaths.txt...
-    echo SillyTavernExtras installed at: %SillyTavernExtrasPath% > "%~dp0..\InstallPaths.txt"
-) else (
-    echo Appending to InstallPaths.txt...
-    echo SillyTavernExtras installed at: %SillyTavernExtrasPath% >> "%~dp0..\InstallPaths.txt"
-)		
 )
 
 REM Check if the virtual environment with requirements is already created
 echo Checking if the virtual environment with requirements is already created...
 if exist "%SillyTavernExtrasPath%\venv" (
     echo Virtual environment with requirements is already created. Skipping virtual environment creation and package installation...
-	
     REM Activate the virtual environment
     echo Activating the virtual environment...
     call "%SillyTavernExtrasPath%\venv\Scripts\activate.bat"
@@ -77,8 +67,9 @@ if exist "%SillyTavernExtrasPath%\venv" (
     REM Upgrade pip
     python -m pip install --upgrade pip
 
-    REM Install the required
-	    pip install -r "%SillyTavernExtrasPath%\requirements.txt"
+    REM Install the required packages from requirements.txt
+    echo Installing required packages...
+    pip install --no-cache-dir -r "%SillyTavernExtrasPath%\requirements.txt"
 )
 
 REM Prompt user to select modules to enable
@@ -95,18 +86,23 @@ set /p "moduleSelection=Enter the module numbers to enable (separated by spaces 
 
 REM Set default modules if no selection is made or incorrect input
 set "enabledModules=caption,summarize,classify"
+set "moduleMap[1]=caption"
+set "moduleMap[2]=summarize"
+set "moduleMap[3]=classify"
+set "moduleMap[4]=keywords"
+set "moduleMap[5]=prompt"
+set "moduleMap[6]=sd"
+set "moduleMap[7]=tts"
+
 for %%m in (%moduleSelection%) do (
-    if %%m==1 set "enabledModules=!enabledModules!,caption"
-    if %%m==2 set "enabledModules=!enabledModules!,summarize"
-    if %%m==3 set "enabledModules=!enabledModules!,classify"
-    if %%m==4 set "enabledModules=!enabledModules!,keywords"
-    if %%m==5 set "enabledModules=!enabledModules!,prompt"
-    if %%m==6 set "enabledModules=!enabledModules!,sd"
-    if %%m==7 set "enabledModules=!enabledModules!,tts"
+    set "module=!moduleMap[%%m]!"
+    if defined module (
+        set "enabledModules=!enabledModules!,!module!"
+    )
 )
 
 REM Run the server with enabled modules
 echo Starting the server...
-start "" cmd /k "call "%SillyTavernExtrasPath%\venv\Scripts\activate.bat" && python "%SillyTavernExtrasPath%\server.py" --enable-modules=%enabledModules%"
+start "" /B cmd /C "call "%SillyTavernExtrasPath%\venv\Scripts\activate.bat" && python "%SillyTavernExtrasPath%\server.py" --enable-modules=%enabledModules%"
 
 pause
