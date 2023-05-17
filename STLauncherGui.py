@@ -10,6 +10,7 @@ import win32event
 import win32process
 import win32api
 import win32con
+import ctypes
 
 
 def open_web_link(link):
@@ -45,6 +46,37 @@ def create_button(root, text, command):
 def create_label(root, text):
     label = tk.Label(root, text=text, bg='#36393f', fg='white')
     return label
+    
+        
+def run_start_script(branch_name):
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    if branch_name == "SillyTavern-MainBranch" or branch_name == "SillyTavern-DevBranch":
+        start_script_dir = os.path.abspath(os.path.join(script_dir, "..", branch_name))
+        start_script_path = os.path.join(start_script_dir, "Start.bat")
+        subprocess.Popen(start_script_path, shell=True)
+    else:
+        print("Invalid branch_name.")
+
+
+#Shutdown SillyTavern Servers.
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+def stop_node_servers():
+    if sys.platform == 'win32':
+        # Check for administrative privileges
+        if not is_admin():
+            # Restart script with administrative privileges
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, win32con.SW_SHOWNORMAL)
+            sys.exit()
+
+    # Kill Node.js servers
+    subprocess.run(["taskkill", "/f", "/im", "node.exe"], capture_output=True)
+
+    print("Node servers for SillyTavern have been shut down.")
     
 # Create a function to close the GUI
 def close_gui():
@@ -84,12 +116,12 @@ launch_frame = tk.LabelFrame(root, text="Launch and Close", bg='#36393f', fg='wh
 launch_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="nw")
 
 # Create buttons to launch "Launch ST Main.bat"
-launch_main_button = create_button(launch_frame, "Launch ST Main", lambda: run_script("Launch Scripts/Launch ST Main.bat")) 
+launch_main_button = create_button(launch_frame, "Launch ST Main", lambda: run_start_script("SillyTavern-MainBranch")) 
 launch_main_button.grid(row=0, column=0, padx=5, pady=(5, 0), sticky="nw")
 launch_main_button.configure(width=20)
 
 # Create a button to launch "Launch ST Dev.bat"
-launch_dev_button = create_button(launch_frame, "Launch ST Dev", lambda: run_script("Launch Scripts/Launch ST Dev.bat"))
+launch_dev_button = create_button(launch_frame, "Launch ST Dev", lambda: run_start_script("SillyTavern-DevBranch"))
 launch_dev_button.grid(row=0, column=1, padx=5, pady=(5, 0), sticky="nw")
 launch_dev_button.configure(width=20)
 
@@ -107,12 +139,12 @@ def open_config_gui():
     subprocess.Popen(["python", "Configure/EditConfig.py"])
 	
 # Create a button to open SillyTavern config
-config_button = create_button(launch_frame, "Edit Config SillyTavern", lambda: run_gui_script("Configure/EditConfig.py"))
+config_button = create_button(launch_frame, "Edit Config SillyTavern", lambda: open_config_gui())
 config_button.grid(row=1, column=1, padx=5, pady=5, sticky="nw")
 config_button.configure(width=20)
 
 # Create a button to close SillyTavern
-close_button = create_button(launch_frame, "Close SillyTavern", lambda: run_script("Launch Scripts/Close ST.bat"))
+close_button = create_button(launch_frame, "Close SillyTavern", lambda: stop_node_servers())
 close_button.grid(row=1, column=2, padx=5, pady=5, sticky="nw")
 close_button.configure(width=20)
 
