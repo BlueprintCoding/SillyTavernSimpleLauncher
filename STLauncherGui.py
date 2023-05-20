@@ -11,301 +11,462 @@ import win32process
 import win32api
 import win32con
 import ctypes
+import traceback
 
 
-def open_web_link(link):
-    webbrowser.open(link)
-	
-def open_sillytavern_web():
-    webbrowser.open("http://localhost:8000/")
-    
-def run_script(script):
-    process = subprocess.Popen(script, creationflags=subprocess.CREATE_NEW_CONSOLE)
-    processes[script] = process
+class GUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("SillyTavern Simple Launcher")
 
-def run_script_admin(script):
-    
-    info = win32process.CreateProcess(
-        None,
-        f'cmd /c "{script}"',
-        None,
-        None,
-        0,
-        win32process.CREATE_NEW_CONSOLE | win32con.CREATE_NEW_PROCESS_GROUP,
-        None,
-        None,
-        win32process.STARTUPINFO()
-    )
-    hProcess, hThread, dwProcessId, dwThreadId = info
-    win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
+        # Create the label frame
+        label_frame = tk.Frame(self.root, bg="#1e2124")
+        label_frame.pack(fill=tk.X)
 
-def create_button(root, text, command):
-    button = tk.Button(root, text=text, command=command, bg='#b5bac1', fg='#313338', padx=10, pady=5)
-    return button
+        # Load the animated GIF
+        image_path = "Img/STSL-Logo-animated.gif"
+        image = Image.open(image_path)
+        frames = [ImageTk.PhotoImage(frame.resize((150, 150))) for frame in ImageSequence.Iterator(image)]
 
-def create_label(root, text):
-    label = tk.Label(root, text=text, bg='#36393f', fg='white')
-    return label
-    
-        
-def run_start_script(branch_name):
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    if branch_name == "SillyTavern-MainBranch" or branch_name == "SillyTavern-DevBranch":
-        start_script_dir = os.path.abspath(os.path.join(script_dir, "..", branch_name))
-        start_script_path = os.path.join(start_script_dir, "Start.bat")
-        subprocess.Popen(start_script_path, shell=True)
-    else:
-        print("Invalid branch_name.")
+        # Create a label to display the animated GIF
+        label2 = tk.Label(label_frame, image=frames[0], bg="#1e2124")
+        label2.pack()
 
+        # Function to update the animation
+        def update_animation(index):
+            frame = frames[index]
+            label2.configure(image=frame)
+            root.after(3500, update_animation, (index + 1) % len(frames))
 
-#Shutdown SillyTavern Servers.
-def is_admin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
+        # Start the animation
+        update_animation(0)
 
-def stop_node_servers():
-    if sys.platform == 'win32':
-        # Check for administrative privileges
-        if not is_admin():
-            # Restart script with administrative privileges
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, win32con.SW_SHOWNORMAL)
-            sys.exit()
+        # Create the label
+        label = tk.Label(label_frame, text="SillyTavern Simple Launcher", fg="white", bg="#1e2124", font=("Helvetica", 16, "bold"))
+        label.pack(padx=10, pady=5)
 
-    # Kill Node.js servers
-    subprocess.run(["taskkill", "/f", "/im", "node.exe"], capture_output=True)
+        # Configure the style for the notebook and tabs
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("TNotebook.Tab",
+                        background="#36393e",
+                        foreground="white",
+                        lightcolor="#2E3C42",
+                        borderwidth=0,
+                        padding = [5, 8],
+                        justify ="center",
+                        font = ("Helvetica", 10, "bold"))
+        style.map("TNotebook.Tab",
+                  background=[("selected", "#7289da")],
+                  foreground=[("selected", "white")])
+        style.configure("Dark.TNotebook.Tab", width=150)
 
-    print("Node servers for SillyTavern have been shut down.")
-    
-# Create a function to close the GUI
-def close_gui():
-    root.destroy()
+        # Set up the notebook widget
+        self.notebook = ttk.Notebook(self.root, style="Dark.TNotebook")
+        self.notebook.pack(fill=tk.BOTH, expand=True)
+        self.notebook.bind("<<NotebookTabChanged>>", self.tab_changed)
 
-# Create the main window
-root = tk.Tk()
-root.title("SillyTavern Simple Launcher")
-root.configure(bg='#36393f')
-root.configure(padx=16, pady=16)
+        # Create the notebook frames
+        self.install_frame = ttk.Frame(self.notebook, style="Dark.TFrame")
+        self.launch_frame = ttk.Frame(self.notebook, style="Dark.TFrame")
+        self.tools_frame = ttk.Frame(self.notebook, style="Dark.TFrame")
+        self.uninstall_frame = ttk.Frame(self.notebook, style="Dark.TFrame")
+        self.support_frame = ttk.Frame(self.notebook, style="Dark.TFrame")
 
-# Dictionary to store the Popen objects
-processes = {}
+        # Add the notebook frames
+        self.notebook.add(self.launch_frame, text="Launch")
+        self.notebook.add(self.install_frame, text="Install")
+        self.notebook.add(self.tools_frame, text="Tools")
+        self.notebook.add(self.uninstall_frame, text="Uninstall")
+        self.notebook.add(self.support_frame, text="Support")
 
-# Add a description label at the top
-description_label = tk.Label(root, text="SillyTavern Simple Launcher", bg='#36393f', fg='white', font=("Helvetica", 16, "bold"))
-description_label.grid(row=0, column=0, columnspan=3, pady=10, sticky="nw")
+        # Set up the widgets for each frame
+        self.setup_install_frame()
+        self.setup_launch_frame()
+        self.setup_tools_frame()
+        self.setup_uninstall_frame()
+        self.setup_support_frame()
 
-# Load the animated GIF
-image_path = "Img/STSL-Logo-animated.gif"
-image = Image.open(image_path)
-frames = [ImageTk.PhotoImage(frame.resize((150, 150))) for frame in ImageSequence.Iterator(image)]
+    def open_web_link(self, link):
+        webbrowser.open(link)
 
-# Create a label widget to display the animated GIF
-label2 = tk.Label(root)
-label2.place(x=600, y=13)
+    def open_sillytavern_web(self):
+        webbrowser.open("http://localhost:8000/")
 
-def update_animation(index):
-    frame = frames[index]
-    label2.configure(image=frame)
-    root.after(3500, update_animation, (index + 1) % len(frames))
+    def run_script(self, script):
+        process = subprocess.Popen(script, creationflags=subprocess.CREATE_NEW_CONSOLE)
 
-update_animation(0)
+    def run_script_admin(self, script):
+        info = win32process.CreateProcess(
+            None,
+            f'cmd /c "{script}"',
+            None,
+            None,
+            0,
+            win32process.CREATE_NEW_CONSOLE | win32con.CREATE_NEW_PROCESS_GROUP,
+            None,
+            None,
+            win32process.STARTUPINFO()
+        )
+        hProcess, hThread, dwProcessId, dwThreadId = info
+        win32event.WaitForSingleObject(hProcess, win32event.INFINITE)
 
-# Create a frame for the Launch and Close section
-launch_frame = tk.LabelFrame(root, text="Launch and Close", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
-launch_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="nw")
+    def create_button(self, root, text, command):
+        button = tk.Button(
+            root,
+            text=text,
+            command=command,
+            bg='#b5bac1',
+            fg='#313338',
+            padx=10,
+            pady=5,
+            width=20,
+            font=("Helvetica", 10, "bold")
+        )
+        return button
 
-# Create buttons to launch "Launch ST Main.bat"
-launch_main_button = create_button(launch_frame, "Launch ST Main", lambda: run_start_script("SillyTavern-MainBranch")) 
-launch_main_button.grid(row=0, column=0, padx=5, pady=(5, 0), sticky="nw")
-launch_main_button.configure(width=20)
+    def create_label(self, root, text):
+        label = tk.Label(root, text=text, bg='#36393f', fg='white')
+        return label
 
-# Create a button to launch "Launch ST Dev.bat"
-launch_dev_button = create_button(launch_frame, "Launch ST Dev", lambda: run_start_script("SillyTavern-DevBranch"))
-launch_dev_button.grid(row=0, column=1, padx=5, pady=(5, 0), sticky="nw")
-launch_dev_button.configure(width=20)
-
-# Create a button to launch "Launch ST Extras.bat"
-launch_extras_button = create_button(launch_frame, "Launch ST Extras", lambda: run_script("Launch Scripts/Launch ST Extras.bat"))
-launch_extras_button.grid(row=0, column=2, padx=5, pady=(5, 0), sticky="nw")
-launch_extras_button.configure(width=20)
-
-# Create a button to open SillyTavern
-open_main_button = create_button(launch_frame, "Open SillyTavern", open_sillytavern_web)
-open_main_button.grid(row=1, column=0, padx=5, pady=5, sticky="nw")
-open_main_button.configure(width=20)
-
-def open_config_gui():
-    subprocess.Popen(["python", "Configure/EditConfig.py"])
-	
-# Create a button to open SillyTavern config
-config_button = create_button(launch_frame, "Edit Config SillyTavern", lambda: open_config_gui())
-config_button.grid(row=1, column=1, padx=5, pady=5, sticky="nw")
-config_button.configure(width=20)
-
-# Create a button to close SillyTavern
-close_button = create_button(launch_frame, "Close SillyTavern", lambda: stop_node_servers())
-close_button.grid(row=1, column=2, padx=5, pady=5, sticky="nw")
-close_button.configure(width=20)
-
-# Add an instructions label
-instructions_label = tk.Label(root, text="Instructions: Use the following buttons to install and manage SillyTavern and its dependencies. The install scripts must be run in order, and you must wait for each command prompt to finish before running the next step.", bg='#36393f', fg='white', font=("Helvetica", 11, "bold"), justify="left", wraplength=750)
-instructions_label.grid(row=2, column=0, columnspan=5, padx=10, pady=10, sticky="nw")
-
-# Create a frame for the Install section
-install_frame = tk.LabelFrame(root, text="Install Scripts", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
-install_frame.grid(row=3, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
-
-# Create labels and buttons for each install script
-install_scripts = [
-    ("Install Scripts/1 - Install SillyTavern Dependencies - Run 1st.bat", "Install SillyTavern Dependencies"),
-    ("Install Scripts/2a - Install SillyTavern - Main Branch.bat", "Install SillyTavern - Main Branch"),
-    ("Install Scripts/2b - Install SillyTavern - Developer Preview Branch.bat", "Install SillyTavern - Developer Preview Branch (optional)"),
-    ("Install Scripts/3 - Install SillyTavernExtras - Optional.bat", "Install SillyTavernExtras (optional)"),
-    ("Install Scripts/Check Dependencies.bat", "Check Dependencies")
-]
-
-row = 0
-for script, label_text in install_scripts:
-    label = create_label(install_frame, label_text)
-    label.grid(row=row, column=0, sticky="nw")
-    if script in ["Install Scripts/2 - Install SillyTavern Dependencies - Run 2nd.bat"]:
-        button = create_button(install_frame, "Run", lambda file=script: run_script_admin(file))
-    else:
-         button = create_button(install_frame, "Run", lambda file=script: subprocess.Popen(file, creationflags=subprocess.CREATE_NEW_CONSOLE))
-    button.grid(row=row, column=1, padx=5, pady=(5, 5), sticky="nw")
-    
-    # Add a separating line
-    separator = ttk.Separator(install_frame, orient="horizontal")
-    separator.grid(row=row+1, column=0, columnspan=2, pady=(0, 5), sticky="we")
-    
-    row += 2
-
-tools_frame = tk.LabelFrame(root, text="Tools", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
-tools_frame.place(x=385, y=267)
-
-
-# Create labels and buttons for each tool script
-tool_scripts = [
-    ("Update and Backup Scripts/Backup SillyTavern Files.bat", "Backup SillyTavern Files"),
-    ("Update and Backup Scripts/Update SillyTavern.bat", "Update SillyTavern"),
-    ("Update and Backup Scripts/Update SillyTavernSimpleLauncher.bat", "Update SillyTavernSimpleLauncher"),
-    ("Optimization/OptmizePromptGui.py", "OptimizePrompt GUI"),
-]
-
-row = 0
-for script, label_text in tool_scripts:
-    label = create_label(tools_frame, label_text)
-    label.grid(row=row, column=0, sticky="nw")
-    if script.endswith(".bat"):
-        button = create_button(tools_frame, "Run", lambda file=script: subprocess.Popen(file, creationflags=subprocess.CREATE_NEW_CONSOLE))
-    else:
-        button = create_button(tools_frame, "Run", lambda file=script: run_script(f'python {file}'))
-    button.grid(row=row, column=1, padx=5, pady=(5, 5), sticky="nw")
-    
-    # Add a separating line
-    separator = ttk.Separator(tools_frame, orient="horizontal")
-    separator.grid(row=row+1, column=0, columnspan=2, pady=(0, 5), sticky="we")
-    
-    row += 2
-
-
-# Create a frame for the Uninstall section
-uninstall_frame = tk.LabelFrame(root, text="Uninstall Scripts", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
-uninstall_frame.grid(row=4, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
-
-# Create labels and buttons for each uninstall script
-uninstall_scripts = [
-    ("Uninstall Scripts/Uninstall SillyTavern.bat", "Uninstall SillyTavern"),
-    ("Uninstall Scripts/Uninstall SillyTavernExtras.bat", "Uninstall SillyTavernExtras")
-]
-
-row = 0
-for script, label_text in uninstall_scripts:
-    label = create_label(uninstall_frame, label_text)
-    label.grid(row=row, column=0, sticky="nw")
-    button = create_button(uninstall_frame, "Run", lambda file=script: run_script(file))
-    button.grid(row=row, column=1, padx=5, pady=(5, 5), sticky="nw")
-    
-    # Add a separating line
-    separator = ttk.Separator(uninstall_frame, orient="horizontal")
-    separator.grid(row=row+1, column=0, columnspan=2, pady=(0, 5), sticky="we")
-    
-    row += 2
-
-support_frame = tk.LabelFrame(root, text="Support", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"),borderwidth=4)
-support_frame.place(x=225, y=567)
-
-
-# Create buttons for the web links
-button1 = create_button(support_frame, "SillyTavern GitHub", lambda: open_web_link("https://github.com/Cohee1207/SillyTavern"))
-button1.grid(row=0, column=0, padx=5, pady=5, sticky="nw")
-button1.configure(width=20)
-
-button2 = create_button(support_frame, "STSimpleLauncher GitHub", lambda: open_web_link("https://github.com/blueprintCoding/sillyTavernSimpleLauncher"))
-button2.grid(row=0, column=1, padx=5, pady=5, sticky="nw")
-button2.configure(width=20)
-
-button3 = create_button(support_frame, "Discord", lambda: open_web_link("https://discord.gg/RZdyAEUPvj"))
-button3.grid(row=0, column=2, padx=5, pady=5, sticky="nw")
-button3.configure(width=20)
-
-button4 = create_button(support_frame, "Reddit", lambda: open_web_link("https://reddit.com/r/sillyTavernAI/"))
-button4.grid(row=1, column=0, padx=5, pady=5, sticky="nw")
-button4.configure(width=20)
-
-button5 = create_button(support_frame, "sillytavernai.com", lambda: open_web_link("https://sillytavernai.com"))
-button5.grid(row=1, column=1, padx=5, pady=5, sticky="nw")
-button5.configure(width=20)
-
-def update_install_paths():
-    # Get the parent directory of the GUI file
-    parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-    # List of SillyTavern install directories
-    install_directories = [
-        "SillyTavern-MainBranch",
-        "SillyTavern-DevBranch",
-        "SillyTavern-extras",
-        "SillyTavern-FileBackups"
-    ]
-
-    # Check if each install directory exists
-    install_paths_text = ""
-    for directory in install_directories:
-        path = os.path.join(parent_directory, directory)
-        if os.path.exists(path):
-            install_paths_text += f"{directory}: {path}\n"
+    def run_start_script(self, branch_name):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        if branch_name == "SillyTavern-MainBranch" or branch_name == "SillyTavern-DevBranch":
+            start_script_dir = os.path.abspath(os.path.join(script_dir, "..", branch_name))
+            start_script_path = os.path.join(start_script_dir, "Start.bat")
+            subprocess.Popen(start_script_path, shell=True)
         else:
-            install_paths_text += f"{directory}: Not found\n"
+            print("Invalid branch_name.")
 
-    # Update the label with the new install paths
-    install_paths_label.configure(text=install_paths_text)
+    def is_admin(self):
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
 
-    # Schedule the next update after 10 seconds
-    root.after(10000, update_install_paths)
+    def stop_node_servers(self):
+        if sys.platform == 'win32':
+            # Start a new command shell with administrative privileges
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            subprocess.Popen(
+                'cmd /c "taskkill /f /im node.exe"',
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+                startupinfo=startupinfo
+            )
+        else:
+            print("Stopping Node servers is only supported on Windows.")
+
+        print("Node servers for SillyTavern have been shut down.")
+
+    def setup_install_frame(self):
+        # Create the instructions label
+        instructions_label = tk.Label(
+            self.install_frame,
+            text="Instructions: Use the following buttons to install and manage SillyTavern and its dependencies. The Install SillyTavern Dependencies must be run first, and you must wait for each command prompt to finish before running the next step. \nThe 'Install SillyTavern Dependencies' button will close the GUI to activate all the dependencies correctly.",
+            bg='#36393f',
+            fg='white',
+            font=("Helvetica", 11, "bold"),
+            justify="center",
+            wraplength=500
+        )
+        instructions_label.pack(padx=10, pady=(10, 5), anchor="center")
+
+        def update_wraplength(event):
+            frame_width = event.width
+            new_wraplength = frame_width - 20  # Adjust the padding if needed
+            instructions_label.config(wraplength=new_wraplength)
+
+        self.install_frame.bind("<Configure>", update_wraplength)
+
+        # Create buttons for each install script
+        install_scripts = [
+            ("Install Scripts/1 - Install SillyTavern Dependencies - Run 1st.bat", "Install SillyTavern Dependencies (required)"),
+            ("Install Scripts/2a - Install SillyTavern - Main Branch.bat", "Install SillyTavern - Main Branch"),
+            ("Install Scripts/2b - Install SillyTavern - Developer Preview Branch.bat",
+             "Install SillyTavern - Developer Preview Branch (optional)"),
+            ("Install Scripts/3 - Install SillyTavernExtras - Optional.bat", "Install SillyTavernExtras (optional)"),
+            ("Install Scripts/Check Dependencies.bat", "Check Dependencies")
+        ]
+
+        for script, label_text in install_scripts:
+            if label_text == "Install SillyTavern Dependencies":
+                button = ttk.Button(
+                    self.install_frame,
+                    text=label_text,
+                    command=lambda file=script: self.run_script_and_close_gui(file),
+                    style="Dark.TButton"
+                )
+            else:
+                button = ttk.Button(
+                    self.install_frame,
+                    text=label_text,
+                    command=lambda file=script: self.run_script(file),
+                    style="Dark.TButton"
+                )
+            button.pack(padx=10, pady=(5, 10), anchor="w")
+
+            # Center the button text horizontally and vertically
+            button.pack_configure(anchor="center")
+
+    def run_script_and_close_gui(self, script):
+        # Close the Python GUI
+        self.root.destroy()
+
+        # Run the install script
+        self.run_script(script)
+
+    def setup_launch_frame(self):
+        # Create a new frame for the buttons
+        launch_frame = ttk.Frame(self.launch_frame, style="Dark.TFrame")
+        launch_frame.pack(fill=tk.BOTH, padx=10, pady=10)
+
+        # Create buttons to launch "Launch ST Main.bat"
+        launch_main_button = self.create_button(launch_frame, "Launch ST Main",
+                                                lambda: self.run_start_script("SillyTavern-MainBranch"))
+        launch_dev_button = self.create_button(launch_frame, "Launch ST Dev",
+                                               lambda: self.run_start_script("SillyTavern-DevBranch"))
+        launch_extras_button = self.create_button(launch_frame, "Launch ST Extras",
+                                                  lambda: self.run_script("Launch Scripts/Launch ST Extras.bat"))
+        #open_main_button = self.create_button(launch_frame, "Open SillyTavern", self.open_sillytavern_web)
+        config_button = self.create_button(launch_frame, "Edit Config", lambda: open_config_gui())
+        close_button = self.create_button(launch_frame, "Close SillyTavern", lambda: self.stop_node_servers())
+
+        # Configure the number of columns and rows in the launch frame
+        launch_frame.grid_columnconfigure(0, weight=1)
+        launch_frame.grid_columnconfigure(1, weight=1)
+        launch_frame.grid_columnconfigure(2, weight=1)
+        launch_frame.grid_columnconfigure(3, weight=1)
+        launch_frame.grid_columnconfigure(4, weight=1)
+        launch_frame.grid_columnconfigure(5, weight=1)
+
+        # Place the buttons using the grid layout
+        launch_main_button.grid(row=0, column=0, padx=5, pady=(5, 0))
+        launch_dev_button.grid(row=0, column=1, padx=5, pady=(5, 0))
+        launch_extras_button.grid(row=0, column=2, padx=5, pady=(5, 0))
+        #open_main_button.grid(row=1, column=0, padx=5, pady=5)
+        config_button.grid(row=1, column=0, padx=5, pady=5)
+        close_button.grid(row=1, column=1, padx=5, pady=5)
+        instance_button = self.create_button(launch_frame, "Change SillyTavern Profile", lambda: open_profile_gui())
+        instance_button.grid(row=1, column=2, padx=5, pady=5)
+
+        # Create a separate frame for instance button and label
+        instance_frame = ttk.Frame(launch_frame, style="Dark.TFrame")
+        instance_frame.grid(row=2, column=2, padx=5, pady=5, sticky="nsew")
+        # Add a label below the button
+        label_text = "^\nThis tool while allow you to save and load different profiles into your main or dev ST instances."
+        label = self.create_label(instance_frame, label_text)
+        label.config(bg='#36393f', fg='white', justify="center", wraplength=165)
+        label.pack(padx=10, pady=(0, 5))
 
 
-# Create a frame for the Install Paths section
-install_paths_frame = tk.LabelFrame(root, text="Install Paths:", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"), borderwidth=4)
-install_paths_frame.grid(row=6, column=0, columnspan=1, padx=10, pady=10, sticky="nw")
+        def open_profile_gui():
+            subprocess.Popen(["python", "Instance Manager/Profile Manager GUI.py"])
 
-# Create a label to display the install paths
-install_paths_label = create_label(install_paths_frame, "")
-install_paths_label.pack()
+        def open_config_gui():
+            subprocess.Popen(["python", "Configure/EditConfig.py"])
 
-# Start the initial update
-update_install_paths()
+        # Configure the launch frame to expand with the window
+        launch_frame.grid(sticky="nsew")
 
-# Create a frame for the Close section
-close_frame = tk.LabelFrame(root, text="Launcher Controls:", bg='#36393f', fg='white', font=("Helvetica", 12, "bold"), borderwidth=4)
-close_frame.grid(row=6, column=1, padx=10, pady=10, sticky="nw")
+        # Set the weights of rows and columns to 0 for the instance_frame
+        launch_frame.grid_rowconfigure(2, weight=0)
+        launch_frame.grid_columnconfigure(1, weight=0)
 
-# Create a button to close the GUI
-close_button = create_button(close_frame, "Close SillyTavern Simple Launcher", close_gui)
-close_button.pack()
+        def open_profile_gui():
+            subprocess.Popen(["python", "Instance Manager/Profile Manager GUI.py"])
+
+        def open_config_gui():
+            subprocess.Popen(["python", "Configure/EditConfig.py"])
+
+        # Configure the launch frame to expand with the window
+        launch_frame.grid(sticky="nsew")
+
+    def setup_tools_frame(self):
+        # Create the label at the top of the frame
+        label_text = "Tools"
+        label = self.create_label(self.tools_frame, label_text)
+        label.config(
+            bg='#36393f',
+            fg='white',
+            font=("Helvetica", 11, "bold"),
+            justify="center",
+            wraplength=500
+        )
+        label.pack(padx=10, pady=10, anchor="center")
+        # Create a new frame for the buttons
+        tools_frame = ttk.Frame(self.tools_frame, style="Dark.TFrame")
+        tools_frame.pack(fill=tk.BOTH, padx=10, pady=10)
+        # Create widgets for Tools Frame
+        tool_scripts = [
+            ("Update and Backup Scripts/Backup SillyTavern Files.bat", "Backup SillyTavern Files"),
+            ("Update and Backup Scripts/Update SillyTavern.bat", "Update SillyTavern"),
+            ("Update and Backup Scripts/Update SillyTavernSimpleLauncher.bat", "Update SillyTavernSimpleLauncher"),
+            ("Optimization/OptmizePromptGui.py", "OptimizePrompt GUI"),
+        ]
+
+        for script, label_text in tool_scripts:
+            if script.endswith(".bat"):
+                button = tk.Button(
+                    self.tools_frame,
+                    text=label_text,
+                    command=lambda file=script: subprocess.Popen(file, creationflags=subprocess.CREATE_NEW_CONSOLE),
+                    bg='#b5bac1',
+                    fg='#313338',
+                    padx=10,
+                    pady=5,
+                    width=60,
+                    font=("Helvetica", 10, "bold")
+                )
+            else:
+                button = tk.Button(
+                    self.tools_frame,
+                    text=label_text,
+                    command=lambda file=script: self.run_script(f'python {file}'),
+                    bg='#b5bac1',
+                    fg='#313338',
+                    padx=10,
+                    pady=5,
+                    width=60,
+                    font=("Helvetica", 10, "bold")
+                )
+
+            button.pack(padx=10, pady=(10, 5), anchor="center")
+
+    def setup_uninstall_frame(self):
+        # Create the label at the top of the frame
+        label_text = "Uninstall"
+        label = self.create_label(self.uninstall_frame, label_text)
+        label.config(
+            bg='#36393f',
+            fg='white',
+            font=("Helvetica", 11, "bold"),
+            justify="center",
+            wraplength=500
+        )
+        label.pack(padx=10, pady=10, anchor="center")
+
+        # Create buttons for each uninstall script
+        uninstall_scripts = [
+            ("Uninstall Scripts/Uninstall SillyTavern.bat", "Uninstall SillyTavern"),
+            ("Uninstall Scripts/Uninstall SillyTavernExtras.bat", "Uninstall SillyTavernExtras")
+        ]
+
+        for script, label_text in uninstall_scripts:
+            if script.endswith(".bat"):
+                button = tk.Button(
+                    self.uninstall_frame,
+                    text=label_text,
+                    command=lambda file=script: subprocess.Popen(f'"{file}"', shell=True),
+                    bg='#b5bac1',
+                    fg='#313338',
+                    padx=10,
+                    pady=5,
+                    width=60,
+                    font=("Helvetica", 10, "bold")
+                )
+
+            button.pack(padx=10, pady=(10, 5), anchor="center")
+
+    def setup_support_frame(self):
+        # Create the label at the top of the frame
+        label_text = "Support"
+        label = self.create_label(self.support_frame, label_text)
+        label.config(
+            bg='#36393f',
+            fg='white',
+            font=("Helvetica", 11, "bold"),
+            justify="center",
+            wraplength=500
+        )
+        label.pack(padx=10, pady=10, anchor="center")
+
+        # Create a new frame for the buttons
+        support_inner_frame = ttk.Frame(self.support_frame, style="Dark.TFrame")
+        support_inner_frame.pack(fill=tk.BOTH, padx=10, pady=10)
+
+        # Create buttons for the web links
+        buttons_data = [
+            ("SillyTavern GitHub", "https://github.com/Cohee1207/SillyTavern"),
+            ("STSimpleLauncher GitHub", "https://github.com/blueprintCoding/sillyTavernSimpleLauncher"),
+            ("Discord", "https://discord.gg/RZdyAEUPvj"),
+            ("Reddit", "https://reddit.com/r/sillyTavernAI/"),
+            ("sillytavernai.com", "https://sillytavernai.com")
+        ]
+
+        for label_text, link in buttons_data:
+            button = tk.Button(
+                support_inner_frame,
+                text=label_text,
+                command=lambda link=link: self.open_web_link(link),
+                bg='#b5bac1',
+                fg='#313338',
+                padx=10,
+                pady=5,
+                width=60,
+                font=("Helvetica", 10, "bold")
+            )
+            button.pack(fill=tk.X, padx=5, pady=5)
+
+        # Configure the support inner frame to expand vertically
+        support_inner_frame.pack(fill=tk.BOTH, expand=True)
+
+    def tab_changed(self, event):
+        # Adjust the notebook frame size to fit the window
+        self.notebook.update_idletasks()
+        self.notebook_width = self.notebook.winfo_width()
+        self.notebook_height = self.notebook.winfo_height()
+
+        # Get the maximum width among all the frames
+        max_frame_width = max(
+            self.install_frame.winfo_width(),
+            self.launch_frame.winfo_width(),
+            self.tools_frame.winfo_width(),
+            self.uninstall_frame.winfo_width(),
+            self.support_frame.winfo_width()
+        )
+
+        # Set the window width to the maximum frame width
+        self.root.geometry(f"{max_frame_width}x600")
+
+        # Configure the frames to fill the available space
+        self.install_frame.config(width=self.notebook_width, height=self.notebook_height)
+        self.launch_frame.config(width=self.notebook_width, height=self.notebook_height)
+        self.tools_frame.config(width=self.notebook_width, height=self.notebook_height)
+        self.uninstall_frame.config(width=self.notebook_width, height=self.notebook_height)
+        self.support_frame.config(width=self.notebook_width, height=self.notebook_height)
 
 
-# Start the GUI event loop
-root.mainloop()
+if __name__ == "__main__":
+    try:
+        root = tk.Tk()
 
+        # Configure the root window to expand with the user's resolution
+        root.minsize(600, 400)
+
+        # Set the style for the notebook and frames
+        style = ttk.Style()
+        style.theme_use("clam")
+        style.configure("Dark.TNotebook", background="#36393f")
+        style.configure("Dark.TFrame", background="#36393f")
+        style.configure("Dark.TopFrame", background="#1e2124")
+        style.configure("Dark.TLabel", background="#36393f", foreground="white")
+        style.configure(
+            "Dark.TButton",
+            background='#b5bac1',
+            foreground='#313338',
+            padx=10,
+            pady=5,
+            width=70,
+            font=("Helvetica", 10, "bold")
+        )
+
+        gui = GUI(root)
+        root.mainloop()
+    except Exception as e:
+        # Log the error traceback
+        traceback.print_exc()
+
+        # You can also save the traceback to a log file
+        with open("error-gui.log", "w") as f:
+            traceback.print_exc(file=f)

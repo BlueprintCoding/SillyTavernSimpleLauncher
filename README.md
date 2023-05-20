@@ -27,7 +27,7 @@ Note: Please review the scripts and make any necessary modifications based on yo
 ## Installation Scripts (In the Install Scripts folder)
 RUN THESE SCRIPTS IN ORDER! SillyTavern will be installed in the parent folder of the "SillyTavernSimpleLauncher" ex if you placed it in your Documents folder SillyTavern will be installed in the documents folder. 
 
-SCRIPT1: "RUN FIRST Install GUI Dependencies.bat"
+SCRIPT1: "STSL GUI Launcher.bat"
 ----
 Installs:
 1. Chocolatey 
@@ -35,20 +35,14 @@ Installs:
 3. NVM (Node Version Manager)
 4. Python (imports Pillow, Tkinter, win32api)
 
-After the script finishes running close the command prompt and run the next script
-----
-
-SCRIPT2: "RunGUI-Launcher.bat"
-----
-Installs:
-1. Nothing! Just checks that the required dependencies are installed and launches the Launcher GUI"
+As the script runs you should see multiple command windows open and close, if everything installs, the GUI should launch automatically. If the GUI doesn't launch automatically run the "STSL GUI Launcher.bat" again.
 ----
 
 Launcher GUI: "STLauncherGui.py"
 ----
 Install Scripts:
-The launcher has buttons to Install SillyTavern and Extras. Make sure to launch them in order from top to bottom, waiting for each to finish before launching the next. 
-Command windows will open when you hit run, some may require Administrator access, allow that or it will not work.
+The launcher has buttons to Install Dependencies, SillyTavern, and Extras. Make sure to launch them in order from top to bottom, waiting for each to finish before launching the next. 
+Command windows will open when you hit run, some may require Administrator access, allow that or it will not work. If you get any errors, close the gui and run it again and rerun the install functions.
 
 --
 
