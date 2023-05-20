@@ -38,8 +38,16 @@ set /P uninstallNode=
 if /I "%uninstallNode%"=="Y" (
     echo Uninstalling Node.js...
     choco uninstall nodejs -y
-)
 
+    echo Checking for Node.js installation in "C:\Program Files"...
+    if exist "C:\Program Files\nodejs" (
+        echo Node.js found in "C:\Program Files". Deleting directory...
+        rmdir /s /q "C:\Program Files\nodejs"
+		echo You may have orphaned NodeJS values in your Enviromental variables, you can manually remove those.
+    ) else (
+        echo Node.js is not installed in "C:\Program Files".
+    )
+)
 
 :: Uninstall NVM
 :UninstallNVM
@@ -48,6 +56,24 @@ set /P uninstallNvm=
 if /I "%uninstallNvm%"=="Y" (
     echo Uninstalling NVM...
     choco uninstall nvm -y
+)
+
+
+:: Uninstall Python Packages
+echo Do you want to uninstall, pyperlcip, nltk, pillow? (Y/N)
+set /P uninstallPP=
+if /I "%uninstallPP%"=="Y" (
+    echo Uninstalling Python imports...
+
+REM Uninstall pyperclip
+pip uninstall -y pyperclip
+
+REM Uninstall nltk
+pip uninstall -y nltk
+
+REM Uninstall Pillow
+pip uninstall -y pillow
+
 )
 
 :: Remove Chocolatey directory
@@ -59,7 +85,7 @@ if /I "%removeChoco%"=="Y" (
 )
 
 :: Get the path of the parent folder
-for %%I in ("%~dp0..\..\..") do set "ParentFolder=%%~fI"
+for %%I in ("%~dp0..\..") do set "ParentFolder=%%~fI"
 
 :: Uninstall SillyTavern Main Branch
 echo Do you want to uninstall the SillyTavern Main Branch? (Y/N)

@@ -36,5 +36,9 @@ echo Installing Node.js...
 choco install nodejs-lts -y
 
 :skipInstallation
-echo Process completed successfully. Run "3a - Install SillyTavern - Main Branch.bat" to install the most stable recent release. Run "3b - Install SillyTavern - Developer Preview Branch" to install the latest developer preview.
+REM Navigate one directory up
+cd..
+
+echo Process completed successfully. Run "STSL GUI Launcher.bat" to relaunch the GUI and activate the installed requirements.
+
 pause

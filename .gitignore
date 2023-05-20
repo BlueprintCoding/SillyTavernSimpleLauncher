@@ -8,3 +8,6 @@ InstallPaths.txt
 #Ignore old files
 old/
 /Launch Scripts/.old
+
+#Ignore Log files
+user-agreement.txt
