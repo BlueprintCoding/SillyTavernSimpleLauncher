@@ -105,7 +105,7 @@ def save_new_instance():
 
 
 def run_backup_script():
-    backup_script_path = os.path.join(os.path.dirname(__file__), "..", "..", "Update and Backup Scripts", "Backup SillyTavern Files.bat")
+    backup_script_path = os.path.join(os.path.dirname(__file__), "..", "Update and Backup Scripts", "Backup SillyTavern Files.bat")
     subprocess.call(backup_script_path, shell=True)
 
 
