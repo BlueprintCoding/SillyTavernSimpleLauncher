@@ -52,7 +52,7 @@ for /L %%i in (0,1,6) do (
         start cmd /k "%~dp0STSL GUI Launcher.bat" & exit
     )
 )
-
+call venv\Scripts\activate.bat
 REM Launch the "STLauncherGui.py" GUI
 start "" python STLauncherGui.py
 

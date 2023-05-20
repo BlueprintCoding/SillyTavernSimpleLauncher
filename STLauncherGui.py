@@ -190,7 +190,7 @@ class GUI:
         ]
 
         for script, label_text in install_scripts:
-            if label_text == "Install SillyTavern Dependencies":
+            if label_text == "Install SillyTavern Dependencies (required)":
                 button = ttk.Button(
                     self.install_frame,
                     text=label_text,
@@ -442,7 +442,20 @@ if __name__ == "__main__":
         root = tk.Tk()
 
         # Configure the root window to expand with the user's resolution
-        root.minsize(600, 400)
+        # Get the screen width and height
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+
+        # Calculate the window position
+        window_width = 600
+        window_height = 600
+        window_x = (screen_width - window_width) // 2
+        window_y = (screen_height - window_height) // 2
+        root.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}")
+
+        # Configure the root window to expand with the user's resolution
+        root.minsize(window_width, window_height)
+        root.minsize(window_width, window_height)
 
         # Set the style for the notebook and frames
         style = ttk.Style()

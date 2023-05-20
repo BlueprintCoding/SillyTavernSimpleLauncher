@@ -20,7 +20,7 @@ if '%errorlevel%' NEQ '0' (
     CD /D "%~dp0"
 
 :: Get the path of the parent folder
-for %%I in ("%~dp0..\..\..") do set "ParentFolder=%%~fI"
+for %%I in ("%~dp0..\..") do set "ParentFolder=%%~fI"
 
 REM Create the ST-Backups folder if it doesn't exist
 set "backup_folder=%ParentFolder%\SillyTavern-FileBackups"

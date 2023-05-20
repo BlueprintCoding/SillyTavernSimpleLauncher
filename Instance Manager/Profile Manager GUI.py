@@ -105,9 +105,13 @@ def save_new_instance():
 
 
 def run_backup_script():
-    backup_script_path = os.path.join(os.path.dirname(__file__), "..", "Update and Backup Scripts", "Backup SillyTavern Files.bat")
-    subprocess.call(backup_script_path, shell=True)
-
+    backup_script_path = os.path.join(os.path.dirname(__file__), "Backup SillyTavern FilesPMG.bat")
+    script_directory = os.path.dirname(backup_script_path)
+    
+    # Change the current working directory to the script directory
+    os.chdir(script_directory)
+    
+    subprocess.Popen(["cmd", "/c", "start", "cmd", "/k", backup_script_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
 
 # Set padding values in pixels (px)
 padding_x = 100

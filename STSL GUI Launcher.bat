@@ -1,7 +1,7 @@
 @echo off
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-:: Get the path of the parent folder
+:: Set the path of the parent folder
 for %%I in ("%~dp0....") do set "ParentFolder=%%~fI"
 
 :: Check for permissions
@@ -22,14 +22,12 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 
-
 REM Check if the user-agreement file exists
 if exist user-agreement.txt (
     for /F "tokens=*" %%A in (user-agreement.txt) do set previousAnswer=%%A
 ) else (
     set previousAnswer=N
 )
-
 
 set previousAnswer=%previousAnswer:~0,1%
 
@@ -70,36 +68,67 @@ if /i "%userInput%" NEQ "Y" (
 :installation
 REM Continue with the installation steps...
 
+:: Create and activate a virtual environment
+python -m venv venv
+call venv\Scripts\activate.bat
 
-:: Check if Chocolatey is already installed
-choco -v >nul 2>&1
+:: Upgrade pip if needed
+python -m pip install --upgrade pip >nul 2>>&1
 if %errorlevel% equ 0 (
-    echo Chocolatey is already installed.
+    echo Pip is already up to date.
+) else (
+    echo Upgrading pip...
+    python -m pip install --upgrade pip
+    if %errorlevel% neq 0 (
+        echo Error upgrading pip.
+    ) else (
+        echo Pip upgraded successfully.
+    )
+)
+
+:: Install Chocolatey
+choco -v >nul 2>>"GUI-Launch-Errors.txt"
+if %errorlevel% equ 0 (
+    echo Chocolatey is already installed. >>"GUI-Launch-Errors.txt"
 ) else (
     echo Installing Chocolatey...
     @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-
+    if %errorlevel% neq 0 (
+        echo Error installing Chocolatey. >>"GUI-Launch-Errors.txt"
+    ) else (
+        echo Chocolatey installed successfully. >>"GUI-Launch-Errors.txt"
+    )
 )
 
-:: Check if Git is already installed
-git --version >nul 2>&1
+:: Install Git
+git --version >nul 2>>"GUI-Launch-Errors.txt"
 if %errorlevel% equ 0 (
-    echo Git is already installed.
+    echo Git is already installed. >>"GUI-Launch-Errors.txt"
 ) else (
     echo Installing Git...
     choco install git -y
+    if %errorlevel% neq 0 (
+        echo Error installing Git. >>"GUI-Launch-Errors.txt"
+    ) else (
+        echo Git installed successfully. >>"GUI-Launch-Errors.txt"
+    )
 )
 
-:: Check if NVM is already installed
-nvm version >nul 2>&1
+:: Install NVM
+nvm version >nul 2>>"GUI-Launch-Errors.txt"
 if %errorlevel% equ 0 (
-    echo NVM is already installed.
+    echo NVM is already installed. >>"GUI-Launch-Errors.txt"
 ) else (
     echo Installing NVM...
     choco install nvm -y
+    if %errorlevel% neq 0 (
+        echo Error installing NVM. >>"GUI-Launch-Errors.txt"
+    ) else (
+        echo NVM installed successfully. >>"GUI-Launch-Errors.txt"
+    )
 )
 
-REM Check if Python 3.10 is installed
+:: Install Python 3.10
 python --version 2>nul
 if %errorlevel% neq 0 (
     echo Python is not found via the system path. Checking alternative locations...
@@ -108,64 +137,94 @@ if %errorlevel% neq 0 (
     if exist "C:\Program Files\Python310" (
         echo Python 3.10 is installed in C:\Program Files\Python310.
         set "PythonDir=C:\Program Files\Python310"
+		:: Create and activate a virtual environment
+		python -m venv venv
+		call venv\Scripts\activate.bat
     ) else (
         :: Check if Python 3.10 is installed in user-specific directory
         set "PythonDir=C:\Users%username%\AppData\Local\Programs\Python\Python310"
         if exist "%PythonDir%" (
             echo Python 3.10 is installed in %PythonDir%.
+			:: Create and activate a virtual environment
+			python -m venv venv
+			call venv\Scripts\activate.bat
         ) else (
             echo Python 3.10 is not found in the specified locations. Installing Python 3.10 using Chocolatey...
             REM Install Python 3.10 using Chocolatey
             choco install python310 -y --force
-            set "PythonDir=C:\Program Files\Python310"
+            if %errorlevel% neq 0 (
+                echo Error installing Python 3.10. >>"GUI-Launch-Errors.txt"
+            ) else (
+                echo Python 3.10 installed successfully. >>"GUI-Launch-Errors.txt"
+                set "PythonDir=C:\Program Files\Python310"
+				:: Create and activate a virtual environment
+				python -m venv venv
+				call venv\Scripts\activate.bat
+
+            )
         )
     )
 
 ) else (
     echo Python 3.10 is already found via the system path.
-set "PythonDir="
+    set "PythonDir="
 )
 
 if not "%PythonDir%"=="" (
-echo Adding Python to the PATH...
-setx PATH "%PythonDir%;%PATH%"
+    echo Adding Python to the PATH...
+    setx PATH "%PythonDir%;%PATH%"
 )
 
-:: Check if Pillow is already installed
-python -c "import PIL" >nul 2>&1
+:: Install Pillow
+python -c "import PIL" >nul 2>>"GUI-Launch-Errors.txt"
 if %errorlevel% equ 0 (
-echo Pillow is already installed.
+    echo Pillow is already installed. >>"GUI-Launch-Errors.txt"
 ) else (
-echo Installing Pillow...
-python -m pip install pillow
+    echo Installing Pillow...
+    python -m pip install --upgrade pillow
+    if %errorlevel% neq 0 (
+        echo Error installing Pillow. >>"GUI-Launch-Errors.txt"
+    ) else (
+        echo Pillow installed successfully. >>"GUI-Launch-Errors.txt"
+    )
 )
 
-:: Check if Tkinter is already installed
-python -c "import tkinter" >nul 2>&1
+:: Install Tkinter
+python -c "import tkinter" >nul 2>>"GUI-Launch-Errors.txt"
 if %errorlevel% equ 0 (
-echo Tkinter is already installed.
+    echo Tkinter is already installed. >>"GUI-Launch-Errors.txt"
 ) else (
-echo Installing Tkinter...
-python -m pip install tkinter
+    echo Installing Tkinter...
+    python -m pip install --upgrade tkinter
+    if %errorlevel% neq 0 (
+        echo Error installing Tkinter. >>"GUI-Launch-Errors.txt"
+    ) else (
+        echo Tkinter installed successfully. >>"GUI-Launch-Errors.txt"
+    )
 )
 
-:: Check if pywin32 is installed
-python -c "import win32api" >nul 2>&1
+:: Install pywin32
+python -c "import win32api" >nul 2>>"GUI-Launch-Errors.txt"
 if %errorlevel% equ 0 (
-echo pywin32 is already installed.
+    echo pywin32 is already installed. >>"GUI-Launch-Errors.txt"
 ) else (
-echo Installing pywin32...
-python -m pip install pywin32
+    echo Installing pywin32...
+    python -m pip install --upgrade pywin32
+    if %errorlevel% neq 0 (
+        echo Error installing pywin32. >>"GUI-Launch-Errors.txt"
+    ) else (
+        echo pywin32 installed successfully. >>"GUI-Launch-Errors.txt"
+    )
 )
 
 REM Launch the "STLauncherGui.py" GUI
 ::start "" python STLauncherGui.py
-
 
 start cmd /k "%~dp0GUI-Dependencies.bat" & exit
 
 REM Close the command window after a successful install or check
 echo Please check that all dependencies installed correctly without errors
 echo If you get errors, please close and run the "STSL GUI Launcher.bat" file again.
+echo You may have to run "STSL GUI Launcher.bat" twice if you did not already have Python installed on your system for it to activate.
 pause
-exit
+::exit

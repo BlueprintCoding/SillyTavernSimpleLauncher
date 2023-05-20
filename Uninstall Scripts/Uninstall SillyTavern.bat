@@ -24,7 +24,7 @@ echo Do you want to uninstall GIT? (Y/N)
 set /P uninstallGit=
 if /I "%uninstallGit%"=="Y" (
     echo Uninstalling GIT...
-    choco uninstall git -y
+    choco uninstall git --yes
     rmdir /s /q "C:\Program Files\Git"
 )
 
@@ -37,7 +37,7 @@ echo Do you want to uninstall Node.js? (Y/N)
 set /P uninstallNode=
 if /I "%uninstallNode%"=="Y" (
     echo Uninstalling Node.js...
-    choco uninstall nodejs -y
+    choco uninstall nodejs --yes
 
     echo Checking for Node.js installation in "C:\Program Files"...
     if exist "C:\Program Files\nodejs" (
@@ -55,7 +55,7 @@ echo Do you want to uninstall NVM? (Y/N)
 set /P uninstallNvm=
 if /I "%uninstallNvm%"=="Y" (
     echo Uninstalling NVM...
-    choco uninstall nvm -y
+    choco uninstall nvm --yes
 )
 
 
