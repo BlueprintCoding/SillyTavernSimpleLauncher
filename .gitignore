@@ -11,3 +11,6 @@ old/
 
 #Ignore Log files
 user-agreement.txt
+*.log
+GUI-Launch-Errors.txt
+STSL-Settings/flags.json
