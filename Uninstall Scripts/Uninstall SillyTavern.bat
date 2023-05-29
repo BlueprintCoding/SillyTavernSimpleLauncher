@@ -60,20 +60,25 @@ if /I "%uninstallNvm%"=="Y" (
 
 
 :: Uninstall Python Packages
-echo Do you want to uninstall, pyperlcip, nltk, pillow? (Y/N)
+echo Do you want to uninstall Python Virtual Environment (Y/N)
 set /P uninstallPP=
 if /I "%uninstallPP%"=="Y" (
     echo Uninstalling Python imports...
 
-REM Uninstall pyperclip
-pip uninstall -y pyperclip
+    REM Remove the 'venv' directory
+    pushd ..
+    rmdir /s /q venv
+    popd
 
-REM Uninstall nltk
-pip uninstall -y nltk
+        REM Remove files from STSL-Settings directory
+    pushd ..
+    del /s /q STSL-Settings\*.*
+    popd
 
-REM Uninstall Pillow
-pip uninstall -y pillow
-
+    REM Remove files from Logs directory
+    pushd ..
+    del /s /q Logs\*.*
+    popd
 )
 
 :: Remove Chocolatey directory

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silly Tavern Profile Selector</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+<body>
+   
+    <div class="container-profile">
+	<div id="alert-container">
+    <div class="alert alert-dismissible fade show  d-none" id="status-message" role="alert">
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+
+	
+        <div class="row">
+		  <div class="col-lg-6 mx-auto">
+		 <h1>Silly Tavern Profile Selector</h1>
+    <p class="lead">This feature is in BETA, please use the backup function before loading and saving profiles.</p>
+  </div></div>
+  <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Profile Manager</h2>
+                        <div class="button-container">
+                            <button class="btn btn-primary" onclick="runBackupScript()">Run Backup</button>
+                        </div>
+                        <hr>
+                        <h3>Select an existing profile to load:</h3>
+<div class="mb-3 select-wrapper">
+  <select class="form-select" id="instance-select">
+    {% for instance in instances %}
+    <option value="{{ instance }}">{{ instance }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="main-branch" name="branch-choice" value="main" checked>
+                                <label class="form-check-label" for="main-branch">Main Branch</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="dev-branch" name="branch-choice" value="dev">
+                                <label class="form-check-label" for="dev-branch">Dev Branch</label>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                            <button class="btn btn-primary" onclick="loadProfile()">Load Profile</button>
+                            <button class="btn btn-primary" onclick="refreshInstances()">Refresh Instances</button>
+							<button class="btn btn-danger" onclick="deleteProfile()">Delete Profile</button>
+							
+                        </div>
+                        <hr>
+                        <h3>Save a new profile:</h3>
+                        <div class="mb-3">
+                            <input class="form-control" type="text" id="new-instance-name" placeholder="Enter profile name">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="save-main-branch" name="save-branch-choice" value="main" checked>
+                                <label class="form-check-label" for="save-main-branch">Main Branch</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" id="save-dev-branch" name="save-branch-choice" value="dev">
+                                <label class="form-check-label" for="save-dev-branch">Dev Branch</label>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                            <button class="btn btn-primary" onclick="saveNewProfile()">Save New Profile</button>
+                        </div>
+                    </div>
+					
+                </div>
+				 <div class="button-container" style="padding-top:10px;">
+                            <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+                        </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+   <script>
+        function runBackupScript() {
+            fetch('/backup-sillytavern-files', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        showAlert('Backup completed successfully.', 'success');
+                    } else {
+                        showAlert('Failed to perform backup.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('An error occurred:', error);
+                });
+        }
+
+        function refreshInstances() {
+            fetch('/refresh-instances')
+                .then(response => response.json())
+                .then(instances => {
+                    const instanceSelect = document.getElementById('instance-select');
+                    instanceSelect.innerHTML = '';
+                    for (const instance of instances) {
+                        const option = document.createElement('option');
+                        option.value = instance;
+                        option.textContent = instance;
+                        instanceSelect.appendChild(option);
+                    }
+                    
+                })
+                .catch(error => {
+                    console.error('An error occurred:', error);
+                });
+        }
+
+        function loadProfile() {
+            const instanceSelect = document.getElementById('instance-select');
+            const selectedInstance = instanceSelect.value;
+            const branchChoice = document.querySelector('input[name="branch-choice"]:checked').value;
+
+            fetch('/load-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    instance: selectedInstance,
+                    destinationBranch: branchChoice
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        showAlert('Profile loaded successfully.', 'success');
+                    } else {
+                        showAlert('Failed to load profile.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('An error occurred:', error);
+                });
+        }
+
+        function saveNewProfile() {
+            const newInstanceName = document.getElementById('new-instance-name').value;
+            const branchChoice = document.querySelector('input[name="save-branch-choice"]:checked').value;
+
+            if (newInstanceName.trim() === '') {
+                showAlert('Please enter a valid profile name.', 'danger');
+                return;
+            }
+
+            fetch('/save-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    instanceName: newInstanceName,
+                    branchChoice: branchChoice
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+						refreshInstances()
+                        showAlert('Save successful.', 'success');
+                    } else {
+                        showAlert('Failed to save profile.', 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('An error occurred:', error);
+                });
+        }
+
+        function deleteProfile() {
+            const selectedInstance = document.getElementById('instance-select').value;
+
+            if (selectedInstance.trim() === '') {
+                showAlert('Please select a profile to delete.', 'danger');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete the profile "${selectedInstance}"?`)) {
+                fetch('/delete-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        instance: selectedInstance
+                    })
+                })
+                    .then(response => {
+                        if (response.ok) {
+							refreshInstances();
+                            showAlert('Profile deleted successfully.', 'success');
+                            
+                        } else {
+                            showAlert('Failed to delete profile.', 'danger');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('An error occurred:', error);
+                    });
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertElement = document.getElementById('status-message');
+            alertElement.textContent = message;
+            alertElement.classList.remove('d-none');
+            alertElement.classList.add(`alert-${type}`);
+			    setTimeout(() => {
+        hideAlert();
+    }, 7000);
+        }
+
+        function hideAlert() {
+            const alertElement = document.getElementById('status-message');
+            alertElement.classList.add('d-none');
+            alertElement.classList.remove('alert-success', 'alert-danger');
+			
+        }
+		
+		const alertContainer = document.getElementById('alert-container');
+const alertMessage = document.getElementById('status-message');
+
+alertMessage.addEventListener('click', function() {
+    hideAlert()
+});
+
+
+		 function goToIndex() {
+            window.location.href = '/';
+        }
+    </script>
+    </script>
+</body>
+</html>

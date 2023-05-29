@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SillyTavern Simple Launcher</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<script>
+	function disableButtons() {
+            // Disable all buttons
+            var buttons = document.getElementsByTagName("button");
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+        }
+
+        function enableButtons() {
+            // Enable all buttons
+            var buttons = document.getElementsByTagName("button");
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = false;
+            }
+        }
+	</script>
+</head>
+<body>
+    <div class="container">
+        <h1>SillyTavern Simple Launcher</h1>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showContent('launch')">Launch</div>
+            <div class="tab" onclick="showContent('install')">Install</div>
+            <div class="tab" onclick="showContent('tools')">Tools</div>
+            <div class="tab" onclick="showContent('support')">Support</div>
+        </div>
+<div class="loading-container" id="loadingContainer" style="display: none;">
+    <div class="loading-spinner"></div><br>
+	<div class="">Installing Please Wait...</div>
+</div>
+
+<div class="content active" id="launch">
+    <h2>Launch</h2>
+    <div class="button-grid">
+        <button onclick="launchMain()">Launch ST Main</button>
+        <button onclick="launchDev()">Launch ST Dev</button>
+        <button onclick="launchExtras()">Launch ST Extras</button>
+        <button onclick="launchProfileManager()">Change ST Profile</button>
+		<button onclick="editConfig()">Edit Config</button>
+        <button onclick="closeSillyTavern()">Close SillyTavern</button>
+    </div>
+</div>
+
+
+<script>
+    function launchMain() {
+        fetch('/launch-main', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Launching ST Main...");
+                } else {
+                    console.error("Failed to launch ST Main.");
+                }
+            })
+            .catch(error => {
+                console.error("An error occurred:", error);
+            });
+    }
+
+    function launchDev() {
+        fetch('/launch-dev', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Launching ST Dev...");
+                } else {
+                    console.error("Failed to launch ST Dev.");
+                }
+            })
+            .catch(error => {
+                console.error("An error occurred:", error);
+            });
+    }
+
+    function launchExtras() {
+        fetch('/launch-extras', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    console.log("Launching ST Extras...");
+                } else {
+                    console.error("Failed to launch ST Extras.");
+                }
+            })
+            .catch(error => {
+                console.error("An error occurred:", error);
+            });
+    }
+	
+function launchProfileManager() {
+    fetch('/profile-manager', { method: 'POST' })
+        .then(response => {
+            if (response.ok) {
+                console.log("Launching Profile Manager...");
+                window.location.href = "/profile-manager"; // Redirect to the profile manager page
+            } else {
+                console.error("Failed to launch Profile Manager.");
+            }
+        })
+        .catch(error => {
+            console.error("An error occurred:", error);
+        });
+}
+
+    function editConfig() {
+window.location.href = "/configuration";
+    }
+
+    function closeSillyTavern() {
+        fetch("/close-sillytavern", { method: "POST" })
+            .then(response => response.text())
+            .then(result => {
+                console.log(result); // Optional: Print the result in the console
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+    }
+	
+</script>
+
+
+
+
+<div class="content" id="install">
+    <h2>Install</h2>
+    <div class="button-grid">
+                <button onclick="install('dependencies')">Install SillyTavern Dependencies</button>
+                <button onclick="install('mainBranch')">Install SillyTavern - Main Branch</button>
+                <button onclick="install('devBranch')">Install SillyTavern - Developer Preview Branch</button>
+                <button onclick="migrateProfile()">Migrate Existing SillyTavern Install as Profile</button>
+                <button onclick="disableButtons(); install('extras')">Install SillyTavernExtras</button>
+    </div>
+</div>
+
+
+<script>
+    function showLoading() {
+        document.getElementById('loadingContainer').style.display = 'flex';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingContainer').style.display = 'none';
+    }
+	
+        function install(module) {
+            disableButtons();
+            showLoading();
+            fetch('/install', { method: 'POST', body: module })
+                .then(response => response.text())
+                .then(message => {
+                    alert(message);
+                    hideLoading();
+                    enableButtons();
+                })
+                .catch(error => {
+                    console.error(error);
+                    hideLoading();
+                    enableButtons();
+                });
+        }
+		
+		
+    function migrateProfile() {
+        window.location.href = "/migrate-profile";
+    }
+
+</script>
+
+
+<div class="content" id="tools">
+    <h2>Tools</h2>
+    <div class="button-grid">
+        <button onclick="backupST()">Backup SillyTavern Files</button>
+        <button onclick="executeScript('OptimizePrompt GUI')">OptimizePrompt GUI</button>
+    </div>
+ <div class="button-grid" style="padding-top:10px;">
+        <button onclick="executeScript('Update SillyTavern', 'main')">Update SillyTavern Main Branch</button>
+        <button onclick="executeScript('Update SillyTavern', 'dev')">Update SillyTavern Dev Branch</button>
+        <button onclick="executeScript('Update SillyTavern', 'extras')">Update SillyTavern Extras</button>
+    </div>
+</div>
+
+<script>
+    function backupST() {
+        fetch('/backup-sillytavern-files', { method: 'POST' })
+            .then(response => {
+                if (response.ok) {
+                    alert('Backup completed successfully.');
+                } else {
+                    alert('Failed to perform backup.');
+                }
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+            });
+    }
+	
+function executeScript(scriptName, branch) {
+    if (scriptName === 'Update SillyTavern') {
+        fetch('/update-sillytavern', { method: 'POST', body: new URLSearchParams({ branch }) })
+            .then(response => response.text())
+            .then(result => {
+                alert(result);
+            })
+            .catch(error => {
+                console.error('An error occurred:', error);
+            });
+    }
+}
+
+
+</script>
+
+        <div class="content" id="support">
+            <h2>Support</h2>
+            <p>This is the Support tab content.</p>
+        </div>
+    </div>
+
+<script>
+    function showContent(tabName) {
+        // Hide all content divs
+        var contentDivs = document.getElementsByClassName("content");
+        for (var i = 0; i < contentDivs.length; i++) {
+            contentDivs[i].classList.remove("active");
+        }
+
+        // Deactivate all tabs
+        var tabs = document.getElementsByClassName("tab");
+        for (var i = 0; i < tabs.length; i++) {
+            tabs[i].classList.remove("active");
+        }
+
+        // Show selected content
+        var selectedContent = document.getElementById(tabName);
+        if (selectedContent) {
+            selectedContent.classList.add("active");
+        }
+
+        // Activate selected tab
+        var tabButtons = document.getElementsByClassName("tab");
+        for (var i = 0; i < tabButtons.length; i++) {
+            if (tabButtons[i].getAttribute("onclick") === "showContent('" + tabName + "')") {
+                tabButtons[i].classList.add("active");
+            }
+        }
+    }
+</script>
+
+
+</body>
+</html>
