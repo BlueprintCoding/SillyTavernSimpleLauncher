@@ -3,9 +3,10 @@ import shutil
 import os
 import re
 import logging
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect
 import configparser
 from datetime import datetime
+import socket
 
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
@@ -122,12 +123,38 @@ def launch_dev():
     subprocess.Popen(start_script_path, shell=True)
     return "Launching ST Dev..."
 
-@app.route("/launch-extras", methods=['POST'])
-def launch_extras():
-    batch_file_path = os.path.join(home_folder, "Launch Scripts/Launch ST Extras.bat")
-    subprocess.Popen(batch_file_path, shell=True)
-    return "Launching ST Extras..."
+# List of available modules
+modules = [
+    "caption",
+    "summarize",
+    "classify",
+    "sd",
+    "silero-tts",
+    "edge-tts",
+    "chromadb"
+]
 
+# @app.route("/launch-extras", methods=['POST'])
+# def launch_extras():
+#     batch_file_path = os.path.join(home_folder, "Launch Scripts/Launch ST Extras.bat")
+#     subprocess.Popen(batch_file_path, shell=True)
+#     return "Launching ST Extras..."
+
+@app.route('/extras-manager', methods=['POST', 'GET'])
+def extras_manager():
+    if request.method == 'POST':
+        selected_modules = request.form.getlist('modules')
+        launch_server(selected_modules)
+
+        return redirect('/')
+    else:
+        return render_template('extras_manager.html')
+
+
+def launch_server(selected_modules):
+    launch_extras = True
+    print("made it here to launch server")
+    install_extras(launch_extras, selected_modules)
 
 @app.route('/configuration', methods=['GET', 'POST'])
 def configuration():
@@ -293,56 +320,67 @@ def install_dev_branch():
         return "Silly Tavern Dev Branch Cloned Successfully."
 
 @app.route("/install-extras", methods=['GET', 'POST'])
-def install_extras():
+def install_extras(launch_extras, selected_modules):
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
     sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
-
+    print("made it here to install extras pathing")
     if os.path.exists(sillytavern_extras_path):
-        return "SillyTavern-extras is already installed. Skipping clone..."
-
-    # Clone the SillyTavern-extras repository
-    subprocess.run(["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
+        print("SillyTavern-extras is already installed. Skipping clone...")
+    else:
+        # Clone the SillyTavern-extras repository
+        subprocess.run(["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
 
     # Create and activate the virtual environment
     venv_path = os.path.join(sillytavern_extras_path, "venv")
+    print(launch_extras)
     if not os.path.exists(venv_path):
         # Create the virtual environment
         subprocess.run(["python", "-m", "venv", venv_path])
 
-        # Activate the virtual environment
-        activate_script = os.path.join(venv_path, "Scripts", "activate.bat")
-        subprocess.run([activate_script], shell=True, text=True)
+    # Activate the virtual environment
+    activate_script = os.path.join(venv_path, "Scripts", "activate.bat")
+    subprocess.run([activate_script], shell=True, text=True)
 
-        # Upgrade pip
-        subprocess.run(["python", "-m", "pip", "install", "--upgrade", "pip"])
+    # Upgrade pip
+    subprocess.run([os.path.join(venv_path, "Scripts", "python"), "-m", "pip", "install", "--upgrade", "pip"])
 
-        # Install the required packages from requirements.txt
-        requirements_file = os.path.join(sillytavern_extras_path, "requirements.txt")
-        subprocess.run(["pip", "install", "--no-cache-dir", "-r", requirements_file])
+    # Install the required packages from requirements.txt
+    requirements_file = os.path.join(sillytavern_extras_path, "requirements-complete.txt")
+    subprocess.run([os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
+    print("made it here into extras install venv2")
 
-    # Start the server
-    enabled_modules = ["caption", "summarize", "classify"]  # Default modules
-    module_selection = input("Enter the module numbers to enable (separated by spaces, e.g., 1 2 5): ")
-    module_map = {
-        1: "caption",
-        2: "summarize",
-        3: "classify",
-        4: "keywords",
-        5: "prompt",
-        6: "sd",
-        7: "tts"
-    }
-    for module_number in module_selection.split():
-        module = module_map.get(int(module_number))
-        if module:
-            enabled_modules.append(module)
+    if launch_extras:
+        print("made it here into TRUE")
+        enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
+        script_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
+        activate_venv = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras", "venv" , "Scripts", "activate.bat"))
+        extras_port = "--port=6969"
+        print(activate_venv)
+        script_path = os.path.join(script_directory, "server.py")
+        print("python", script_path, enabled_modules_arg)
 
-    server_script = os.path.join(sillytavern_extras_path, "server.py")
-    enabled_modules_arg = "--enable-modules=" + ",".join(enabled_modules)
-    subprocess.Popen(["python", server_script, enabled_modules_arg], creationflags=subprocess.CREATE_NEW_CONSOLE)
+        venv_python = os.path.join(venv_path, "Scripts",
+                                   "python.exe")  # Path to virtual environment's python executable
+        if os.path.exists(venv_python):
+            print ("venv exists")
+        if os.path.exists(script_path):
+            print("script path exists")
 
-    return "Installing SillyTavern-extras..."
-    
+        subprocess.Popen(
+            ['start', 'cmd', '/k', f'call {activate_venv} && {venv_python} {script_path} {enabled_modules_arg} {extras_port}'],
+            shell=True,
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
+
+        print("Server launched successfully.")
+    else:
+        return "SillyTavern-extras Installed..."
+
+
+
+
+
+
 @app.route("/install", methods=['POST'])
 def install():
     module = request.get_data(as_text=True)
@@ -368,10 +406,6 @@ def install():
 
     # Return a response indicating successful installation
     return "Installation completed successfully"
-
-import os
-import shutil
-from datetime import datetime
 
 import os
 import shutil
@@ -506,6 +540,8 @@ def profile_manager():
     return render_template('profile_manager.html', instances=instances)
 
 
+
+
 def copy_instance_files(source, destination):
     dirs_to_copy = [
         "Backgrounds", "Characters", "Chats", "Group chats", "Groups",
@@ -595,6 +631,15 @@ def delete_profile():
     else:
         return 'Profile does not exist.', 400
 
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('8.8.8.8', 80))
+    local_ip = s.getsockname()[0]
+    s.close()
+    return local_ip
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    host = get_local_ip()
+    port = 6969
+    print(host)
+    app.run(host=host, port=port)

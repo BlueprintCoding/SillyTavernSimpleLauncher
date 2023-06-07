@@ -80,10 +80,11 @@
     }
 
     function launchExtras() {
-        fetch('/launch-extras', { method: 'POST' })
+        fetch('/extras-manager', { method: 'GET' })
             .then(response => {
                 if (response.ok) {
                     console.log("Launching ST Extras...");
+                    window.location.href = "/extras-manager"; // Redirect to the profile manager page
                 } else {
                     console.error("Failed to launch ST Extras.");
                 }

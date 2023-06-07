@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silly Tavern Extras Manager</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-profile">
+        <div id="alert-container">
+            <div class="alert alert-dismissible fade show d-none" id="status-message" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Extras Manager</h2>
+                        <hr>
+                        <h3>Select modules to load</h3>
+
+                        <form method="post" action="/extras-manager">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="caption" id="caption">
+                                <label class="form-check-label" for="caption">Caption</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="summarize" id="summarize">
+                                <label class="form-check-label" for="summarize">Summarize</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="classify" id="classify">
+                                <label class="form-check-label" for="classify">Classify</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="sd" id="sd">
+                                <label class="form-check-label" for="sd">SD</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="silero-tts" id="silero-tts">
+                                <label class="form-check-label" for="silero-tts">Silero TTS</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="edge-tts" id="edge-tts">
+                                <label class="form-check-label" for="edge-tts">Edge TTS</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="modules" value="chromadb" id="chromadb">
+                                <label class="form-check-label" for="chromadb">ChromaDB</label>
+                            </div>
+                            <br>
+                            <div class="button-container">
+                                <button class="btn btn-primary" type="submit">Launch Extras</button>
+                                <button class="btn btn-primary" onclick="closeExtras()">Close Extras</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="button-container" style="padding-top:10px;">
+        <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+    <script>
+        function showAlert(message, type) {
+            const alertElement = document.getElementById('status-message');
+            alertElement.textContent = message;
+            alertElement.classList.remove('d-none');
+            alertElement.classList.add(`alert-${type}`);
+            setTimeout(() => {
+                hideAlert();
+            }, 7000);
+        }
+
+        function hideAlert() {
+            const alertElement = document.getElementById('status-message');
+            alertElement.classList.add('d-none');
+            alertElement.classList.remove('alert-success', 'alert-danger');
+        }
+
+        const alertContainer = document.getElementById('alert-container');
+        const alertMessage = document.getElementById('status-message');
+
+        alertMessage.addEventListener('click', function () {
+            hideAlert();
+        });
+
+        function goToIndex() {
+            window.location.href = '/';
+        }
+
+        function closeExtras() {
+            // Perform any necessary cleanup or close actions
+            // This function can be implemented based on your requirements
+        }
+    </script>
+</body>
+</html>
