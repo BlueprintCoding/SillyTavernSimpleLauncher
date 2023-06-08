@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Silly Tavern Extras Manager</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container-profile">
+    <div class="container">
         <div id="alert-container">
             <div class="alert alert-dismissible fade show d-none" id="status-message" role="alert">
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -14,10 +14,10 @@
         </div>
 
         <div class="row">
-            <div class="col-lg-6 mx-auto">
+            <div class="col-lg-8 mx-auto">
                 <div class="card">
                     <div class="card-body">
-                        <h2 class="card-title">Extras Manager</h2>
+                        <div class="card-header"><h2 class="card-title">Extras Manager</h2></div>
                         <hr>
                         <h3>Select modules to load</h3>
 
@@ -51,20 +51,21 @@
                                 <label class="form-check-label" for="chromadb">ChromaDB</label>
                             </div>
                             <br>
-                            <div class="button-container">
+                            <div class="button-grid">
                                 <button class="btn btn-primary" type="submit">Launch Extras</button>
-                                <button class="btn btn-primary" onclick="closeExtras()">Close Extras</button>
+{#                                <button class="btn btn-primary" onclick="closeExtras()">Close Extras</button>#}
                             </div>
                         </form>
                     </div>
                 </div>
+                                <div class="spec-button-grid button-grid" style="padding-top:10px;">
+        <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+    </div>
             </div>
         </div>
     </div>
 
-    <div class="button-container" style="padding-top:10px;">
-        <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
-    </div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
     <script>
@@ -95,10 +96,6 @@
             window.location.href = '/';
         }
 
-        function closeExtras() {
-            // Perform any necessary cleanup or close actions
-            // This function can be implemented based on your requirements
-        }
     </script>
 </body>
 </html>

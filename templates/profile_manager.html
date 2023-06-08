@@ -2,13 +2,14 @@
 <html>
 <head>
     <title>Silly Tavern Profile Selector</title>
+    	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 
 </head>
 <body>
    
-    <div class="container-profile">
+    <div class="container">
 	<div id="alert-container">
     <div class="alert alert-dismissible fade show  d-none" id="status-message" role="alert">
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -17,16 +18,16 @@
 
 	
         <div class="row">
-		  <div class="col-lg-6 mx-auto">
-		 <h1>Silly Tavern Profile Selector</h1>
+		  <div class="col-lg-8 mx-auto">
+		 <div class="title"><h1>Silly Tavern Profile Selector</h1></div>
     <p class="lead">This feature is in BETA, please use the backup function before loading and saving profiles.</p>
   </div></div>
   <div class="row">
-            <div class="col-lg-6 mx-auto">
+            <div class="col-lg-8 mx-auto">
                 <div class="card">
                     <div class="card-body">
                         <h2 class="card-title">Profile Manager</h2>
-                        <div class="button-container">
+                        <div class="button-grid">
                             <button class="btn btn-primary" onclick="runBackupScript()">Run Backup</button>
                         </div>
                         <hr>
@@ -49,7 +50,7 @@
                                 <label class="form-check-label" for="dev-branch">Dev Branch</label>
                             </div>
                         </div>
-                        <div class="button-container">
+                        <div class="button-grid">
                             <button class="btn btn-primary" onclick="loadProfile()">Load Profile</button>
                             <button class="btn btn-primary" onclick="refreshInstances()">Refresh Instances</button>
 							<button class="btn btn-danger" onclick="deleteProfile()">Delete Profile</button>
@@ -70,14 +71,14 @@
                                 <label class="form-check-label" for="save-dev-branch">Dev Branch</label>
                             </div>
                         </div>
-                        <div class="button-container">
+                        <div class="button-grid">
                             <button class="btn btn-primary" onclick="saveNewProfile()">Save New Profile</button>
                         </div>
                     </div>
 					
                 </div>
-				 <div class="button-container" style="padding-top:10px;">
-                            <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+				 <div class="spec-button-grid button-grid" style="padding-top:10px;">
+                            <button class="btn" onclick="goToIndex()">Return to Home</button>
                         </div>
             </div>
         </div>
@@ -238,7 +239,6 @@ alertMessage.addEventListener('click', function() {
 		 function goToIndex() {
             window.location.href = '/';
         }
-    </script>
     </script>
 </body>
 </html>

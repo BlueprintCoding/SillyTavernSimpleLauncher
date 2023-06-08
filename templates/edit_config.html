@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Configuration Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
@@ -11,7 +12,7 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-		
+
 		label {
 		font-weight: bold;
 		}
@@ -55,10 +56,7 @@ function loadDefaults() {
 {% if alert_message %}
 <script>
     alert("{{ alert_message }}");
-</script>
 {% endif %}
-
-
     // Call loadDefaults on window load
     window.onload = loadDefaults;
 </script>
@@ -152,11 +150,9 @@ function loadDefaults() {
                                                 Enable Basic Auth Mode
                                             </label>
                                         </div>
-                                        <small class="form-text text-muted">Toggle basic authentication for endpoints.</small>
+                                        <small class="form-text text-muted">Toggle basic user/password on launch.</small>
                                     </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
+                                                                    <div class="form-group">
                                         <label for="basicAuthUsername">Basic Auth Username:</label>
                                         <input type="text" class="form-control" name="basicAuthUsername" id="basicAuthUsername" value="{{ default_values.basicAuthUser.username }}">
                                         <small class="form-text text-muted">Enter the username for basic authentication.</small>
@@ -166,6 +162,8 @@ function loadDefaults() {
                                         <input type="text" class="form-control" name="basicAuthPassword" id="basicAuthPassword" value="{{ default_values.basicAuthUser.password }}">
                                         <small class="form-text text-muted">Enter the password for basic authentication.</small>
                                     </div>
+                                </div>
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <label for="listen">Listen:</label>
                                         <div class="form-check">
@@ -202,17 +200,20 @@ function loadDefaults() {
                     </div>
                 </div>
             </div>
-            <div class="text-center mt-3">
+            <div class="spec-button-grid button-grid" style="margin-top: 10px;">
                 <button type="submit" class="btn btn-primary">Update Config</button>
             </div>
         </form>
+        <div class="spec-button-grid button-grid" style="margin-top: 10px;">
+         <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
     </div>
-    <div class="text-center mt-3">
-        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Index</a>
     </div>
 
-    <!-- Add your JavaScript code here -->
 
-
+    <script>
+        function goToIndex() {
+            window.location.href = '/';
+        }
+</script>
 </body>
 </html>

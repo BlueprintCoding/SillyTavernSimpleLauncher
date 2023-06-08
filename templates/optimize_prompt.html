@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Optimize Prompt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            <h1>Optimize Prompt</h1>
+            <p>The tool will perform stemming, remove stopwords and punctuation, and show the optimized text. This will help you optimize you prompts and characters to use less tokens. OpenAI and Poe will understand this truncated text like plain english.</p>
+        </div>
+        <div class="content active">
+<div class="input-area">
+    <textarea id="input-text" class="form-control" placeholder="Enter your prompt here"></textarea>
+</div>
+            <div class="spec-button-grid button-grid">
+                <button id="optimize-button" onclick="optimizePrompt()">Optimize Prompt</button>
+            </div>
+<div class="output-area">
+    <textarea id="output-text" class="form-control" placeholder="Optimized prompt will appear here" readonly></textarea>
+</div>
+                        <div class="spec-button-grid button-grid">
+                <button id="copy-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+{#    <script src="{{ url_for('static', filename='script.js') }}"></script>#}
+</body>
+</html>

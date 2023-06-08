@@ -7,6 +7,21 @@ from flask import Flask, render_template, request, jsonify, redirect
 import configparser
 from datetime import datetime
 import socket
+import nltk
+from nltk.stem import PorterStemmer
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize, sent_tokenize
+import string
+import sumy
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.text_rank import TextRankSummarizer
+
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('maxent_ne_chunker')
+nltk.download('words')
 
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
@@ -106,6 +121,10 @@ def migrate_instance():
 
         # Return a JSON response indicating error
         return jsonify({"success": False, "message": f"Error creating the new profile: {str(e)}"})
+
+@app.route('/optimize-prompt')
+def optimize_prompt():
+    return render_template('optimize_prompt.html')
 
 @app.route("/launch-main", methods=['POST'])
 def launch_main():
@@ -323,7 +342,7 @@ def install_dev_branch():
 def install_extras(launch_extras, selected_modules):
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
     sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
-    print("made it here to install extras pathing")
+    # print("made it here to install extras pathing")
     if os.path.exists(sillytavern_extras_path):
         print("SillyTavern-extras is already installed. Skipping clone...")
     else:
@@ -332,7 +351,7 @@ def install_extras(launch_extras, selected_modules):
 
     # Create and activate the virtual environment
     venv_path = os.path.join(sillytavern_extras_path, "venv")
-    print(launch_extras)
+    # print(launch_extras)
     if not os.path.exists(venv_path):
         # Create the virtual environment
         subprocess.run(["python", "-m", "venv", venv_path])
@@ -347,17 +366,17 @@ def install_extras(launch_extras, selected_modules):
     # Install the required packages from requirements.txt
     requirements_file = os.path.join(sillytavern_extras_path, "requirements-complete.txt")
     subprocess.run([os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
-    print("made it here into extras install venv2")
+    # print("made it here into extras install venv2")
 
     if launch_extras:
-        print("made it here into TRUE")
+        # print("made it here into TRUE")
         enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
         script_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
         activate_venv = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras", "venv" , "Scripts", "activate.bat"))
-        extras_port = "--port=6969"
+        extras_port = "--port=5100"
         print(activate_venv)
         script_path = os.path.join(script_directory, "server.py")
-        print("python", script_path, enabled_modules_arg)
+        # print("python", script_path, enabled_modules_arg)
 
         venv_python = os.path.join(venv_path, "Scripts",
                                    "python.exe")  # Path to virtual environment's python executable
@@ -372,7 +391,12 @@ def install_extras(launch_extras, selected_modules):
             creationflags=subprocess.CREATE_NEW_CONSOLE
         )
 
-        print("Server launched successfully.")
+        # Retrieve the PID of the server process
+        server_pid = process.pid
+        # print("Server launched successfully.")
+        # Return the server PID
+        return server_pid
+
     else:
         return "SillyTavern-extras Installed..."
 
@@ -631,6 +655,54 @@ def delete_profile():
     else:
         return 'Profile does not exist.', 400
 
+@app.route('/stem-text', methods=['POST'])
+def stem_text():
+    try:
+        input_text = request.form.get('input_text')
+        if not input_text:
+            return jsonify({'error': 'Please enter some text.'}), 400
+
+        ps = PorterStemmer()
+        stop_words = set(stopwords.words('english'))
+
+        tokens = word_tokenize(input_text)
+        filtered_tokens = [word for word in tokens if word.lower() not in stop_words and word not in string.punctuation]
+        stemmed_text = " ".join([ps.stem(word) for word in filtered_tokens])
+
+        return jsonify({'stemmed_text': stemmed_text}), 200
+
+    except Exception as e:
+        logging.error(f"Error in stem_text function: {e}")
+        return jsonify({'error': 'An error occurred.'}), 500
+
+@app.route('/summarize-text', methods=['POST'])
+def summarize_text():
+    try:
+        input_text = request.form.get('input_text')
+        if not input_text:
+            return jsonify({'error': 'Please enter some text.'}), 400
+
+        # Initialize the TextRank summarizer
+        summarizer = TextRankSummarizer()
+
+        # Tokenize the input text
+        parser = PlaintextParser.from_string(input_text, Tokenizer("english"))
+
+        # Set the number of sentences in the summary
+        num_sentences = 3
+
+        # Summarize the text
+        summary = summarizer(parser.document, num_sentences)
+
+        # Convert summary sentences to a list of strings
+        summary_sentences = [str(sentence) for sentence in summary]
+
+        return jsonify({'summary': summary_sentences}), 200
+
+    except Exception as e:
+        logging.error(f"Error in summarize_text function: {e}")
+        return jsonify({'error': 'An error occurred.'}), 500
+
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(('8.8.8.8', 80))
@@ -642,4 +714,4 @@ if __name__ == '__main__':
     host = get_local_ip()
     port = 6969
     print(host)
-    app.run(host=host, port=port)
+    app.run(port=port)
