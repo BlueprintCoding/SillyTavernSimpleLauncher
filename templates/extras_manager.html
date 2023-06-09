@@ -49,6 +49,11 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="modules" value="chromadb" id="chromadb">
                                 <label class="form-check-label" for="chromadb">ChromaDB</label>
+                            </div>                   <!-- Add the textbox input for flags/parameters -->
+                            <div class="form-group">
+                                <label for="custom-flags">Custom Flags/Parameters</label>
+                                <input class="form-control" type="text" name="custom_flags" id="custom-flags" placeholder="Enter custom flags/parameters">
+                                <label>For example, to load 24 emotions: "--classification-model=joeddav/distilbert-base-uncased-go-emotions-student" See all <a target="_blank" href="https://github.com/SillyTavern/SillyTavern-extras#additional-options">flags here</a></label>
                             </div>
                             <br>
                             <div class="button-grid">

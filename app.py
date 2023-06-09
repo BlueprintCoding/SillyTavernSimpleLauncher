@@ -4,7 +4,6 @@ import os
 import re
 import logging
 from flask import Flask, render_template, request, jsonify, redirect
-import configparser
 from datetime import datetime
 import socket
 import nltk
@@ -12,16 +11,39 @@ from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 import string
-import sumy
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.text_rank import TextRankSummarizer
+import traceback
+# from transformers import AutoTokenizer, LongT5ForConditionalGeneration
 
-nltk.download('punkt')
-nltk.download('stopwords')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('words')
+# # Define model globally
+# model = None
+# # Define tokenizer globally
+# tokenizer = None
+
+# Create a logger instance
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler and set its level to DEBUG
+file_handler = logging.FileHandler("app.log")
+file_handler.setLevel(logging.DEBUG)
+
+# Create a formatter and add it to the file handler
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
+
+# def download_nltk_resources():
+#     resources = ['punkt', 'stopwords', 'averaged_perceptron_tagger', 'maxent_ne_chunker', 'words']
+#     for resource in resources:
+#         try:
+#             nltk.data.find(resource)
+#         except LookupError:
+#             nltk.download(resource)
+
+# Call the download function before using the NLTK resources
+# download_nltk_resources()
 
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
@@ -122,9 +144,28 @@ def migrate_instance():
         # Return a JSON response indicating error
         return jsonify({"success": False, "message": f"Error creating the new profile: {str(e)}"})
 
+# @app.route('/optimize-prompt')
+# def optimize_prompt():
+#     global tokenizer
+#     global model
+#
+#     # Check if tokenizer and model are already loaded
+#     if tokenizer is None or model is None:
+#         # Download Pegasus model if not already downloaded
+#         model_name = "Stancld/longt5-tglobal-large-16384-pubmed-3k_steps"  # Example LongT5 model for text generation
+#         try:
+#             model = LongT5ForConditionalGeneration.from_pretrained(model_name)
+#             tokenizer = AutoTokenizer.from_pretrained("Stancld/longt5-tglobal-large-16384-pubmed-3k_steps")
+#         except:
+#             return jsonify({'error': 'Failed to download LongT5 model.'}), 500
+#
+#     return render_template('optimize_prompt.html')
+
 @app.route('/optimize-prompt')
 def optimize_prompt():
     return render_template('optimize_prompt.html')
+
+
 
 @app.route("/launch-main", methods=['POST'])
 def launch_main():
@@ -163,6 +204,12 @@ modules = [
 def extras_manager():
     if request.method == 'POST':
         selected_modules = request.form.getlist('modules')
+        custom_flags = request.form.get('custom_flags')
+
+        # Append custom flags to the selected modules if a value is provided
+        if custom_flags:
+            selected_modules.append(custom_flags)
+
         launch_server(selected_modules)
 
         return redirect('/')
@@ -292,23 +339,37 @@ def close_sillytavern():
     os.system(f'"{taskkill_executable}" /f /im node.exe')
     return "Closing ST..."
 
+import subprocess
+
+import subprocess
+
+import subprocess
+import platform
+
 @app.route("/install-dependencies", methods=['GET', 'POST'])
 def install_dependencies():
     try:
-        # Check if Node.js is already installed
-        try:
-            node_version = subprocess.check_output(['node', '--version']).decode('utf-8').strip()
-            if node_version.startswith('v18.'):
-                return "Node.js 18 is already installed. Skipping installation."
-        except subprocess.CalledProcessError:
-            pass
+        # Determine the system architecture
+        system_architecture = platform.architecture()[0]
+        if system_architecture == '64bit':
+            node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x64.msi'
+        else:
+            node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x86.msi'
 
-        # Install Node.js 18
-        subprocess.run('npm install -g node@18', shell=True)
+        # Download Node.js installer
+        subprocess.run(f'curl -o node_installer.msi {node_download_url}', shell=True)
+
+        # Install Node.js
+        subprocess.run('msiexec /i node_installer.msi /quiet', shell=True)
+
+        # Remove the Node.js installer
+        subprocess.run('del node_installer.msi', shell=True)
 
         return "Node.js 18 installed successfully."
     except Exception as e:
         return f"Error installing Node.js 18: {str(e)}"
+
+
         
 @app.route("/install-main-branch", methods=['GET', 'POST'])
 def install_main_branch():
@@ -338,67 +399,70 @@ def install_dev_branch():
         subprocess.Popen(clone_command).wait()
         return "Silly Tavern Dev Branch Cloned Successfully."
 
+
 @app.route("/install-extras", methods=['GET', 'POST'])
 def install_extras(launch_extras, selected_modules):
-    parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
-    sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
-    # print("made it here to install extras pathing")
-    if os.path.exists(sillytavern_extras_path):
-        print("SillyTavern-extras is already installed. Skipping clone...")
-    else:
-        # Clone the SillyTavern-extras repository
-        subprocess.run(["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
+    try:
+        parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
+        sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
 
-    # Create and activate the virtual environment
-    venv_path = os.path.join(sillytavern_extras_path, "venv")
-    # print(launch_extras)
-    if not os.path.exists(venv_path):
-        # Create the virtual environment
-        subprocess.run(["python", "-m", "venv", venv_path])
+        if os.path.exists(sillytavern_extras_path):
+            logger.info("SillyTavern-extras is already installed. Skipping clone...")
+        else:
+            subprocess.run(
+                ["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
 
-    # Activate the virtual environment
-    activate_script = os.path.join(venv_path, "Scripts", "activate.bat")
-    subprocess.run([activate_script], shell=True, text=True)
+        venv_path = os.path.join(sillytavern_extras_path, "venv")
 
-    # Upgrade pip
-    subprocess.run([os.path.join(venv_path, "Scripts", "python"), "-m", "pip", "install", "--upgrade", "pip"])
+        if not os.path.exists(venv_path):
+            subprocess.run(["python", "-m", "venv", venv_path])
 
-    # Install the required packages from requirements.txt
-    requirements_file = os.path.join(sillytavern_extras_path, "requirements-complete.txt")
-    subprocess.run([os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
-    # print("made it here into extras install venv2")
+        activate_script = os.path.join(venv_path, "Scripts", "activate.bat")
+        subprocess.run([activate_script], shell=True, text=True)
 
-    if launch_extras:
-        # print("made it here into TRUE")
-        enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
-        script_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
-        activate_venv = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras", "venv" , "Scripts", "activate.bat"))
-        extras_port = "--port=5100"
-        print(activate_venv)
-        script_path = os.path.join(script_directory, "server.py")
-        # print("python", script_path, enabled_modules_arg)
+        subprocess.run([os.path.join(venv_path, "Scripts", "python"), "-m", "pip", "install", "--upgrade", "pip"])
 
-        venv_python = os.path.join(venv_path, "Scripts",
-                                   "python.exe")  # Path to virtual environment's python executable
-        if os.path.exists(venv_python):
-            print ("venv exists")
-        if os.path.exists(script_path):
-            print("script path exists")
+        requirements_file = os.path.join(sillytavern_extras_path, "requirements-complete.txt")
+        subprocess.run(
+            [os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
 
-        subprocess.Popen(
-            ['start', 'cmd', '/k', f'call {activate_venv} && {venv_python} {script_path} {enabled_modules_arg} {extras_port}'],
-            shell=True,
-            creationflags=subprocess.CREATE_NEW_CONSOLE
-        )
+        if launch_extras:
+            enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
+            script_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
+            activate_venv = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras", "venv", "Scripts", "activate.bat"))
+            extras_port = "--port=5100"
+            script_path = os.path.join(script_directory, "server.py")
 
-        # Retrieve the PID of the server process
-        server_pid = process.pid
-        # print("Server launched successfully.")
-        # Return the server PID
-        return server_pid
+            venv_python = os.path.join(venv_path, "Scripts", "python.exe")
 
-    else:
-        return "SillyTavern-extras Installed..."
+            if os.path.exists(venv_python):
+                logger.debug("Virtual environment exists.")
+            if os.path.exists(script_path):
+                logger.debug("Script path exists.")
+
+            subprocess.Popen(
+                ['start', 'cmd', '/k',
+                 f'call {activate_venv} && {venv_python} {script_path} {enabled_modules_arg} {extras_port}'],
+                shell=True,
+                creationflags=subprocess.CREATE_NEW_CONSOLE
+            )
+
+            # Retrieve the PID of the server process
+            server_pid = process.pid
+            logger.info("Server launched successfully.")
+
+            # Return the server PID
+            return server_pid
+
+        else:
+            return "SillyTavern-extras Installed..."
+
+    except Exception as e:
+        logger.error(f"Error in install_extras function: {e}")
+        logger.exception("An error occurred during installation.")
+
+        return jsonify({'error': 'An error occurred during installation.'}), 500
 
 
 
@@ -431,9 +495,6 @@ def install():
     # Return a response indicating successful installation
     return "Installation completed successfully"
 
-import os
-import shutil
-from datetime import datetime
 
 @app.route('/backup-sillytavern-files', methods=['POST'])
 def backup_sillytavern_files():
@@ -655,10 +716,11 @@ def delete_profile():
     else:
         return 'Profile does not exist.', 400
 
+
 @app.route('/stem-text', methods=['POST'])
 def stem_text():
     try:
-        input_text = request.form.get('input_text')
+        input_text = request.json.get('input_text')
         if not input_text:
             return jsonify({'error': 'Please enter some text.'}), 400
 
@@ -675,33 +737,41 @@ def stem_text():
         logging.error(f"Error in stem_text function: {e}")
         return jsonify({'error': 'An error occurred.'}), 500
 
-@app.route('/summarize-text', methods=['POST'])
-def summarize_text():
-    try:
-        input_text = request.form.get('input_text')
-        if not input_text:
-            return jsonify({'error': 'Please enter some text.'}), 400
+# @app.route('/summarize-text', methods=['POST'])
+# def summarize_text():
+#     try:
+#         input_text = request.json.get('input_text')
+#         token_amount = int(request.json.get('token_amount'))
+#         if not input_text:
+#             return jsonify({'error': 'Please enter some text.'}), 400
+#
+#         # Tokenize input text
+#         input_tokens = tokenizer.tokenize(input_text)
+#         input_token_length = len(input_tokens)
+#
+#         # Generate summary
+#         inputs = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', return_tensors='pt')
+#         summary_ids = model.generate(inputs['input_ids'], max_length=token_amount, num_beams=4, early_stopping=True)
+#         summary_text = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+#         summary_tokens = tokenizer.tokenize(summary_text)
+#         summary_token_length = len(summary_tokens)
+#
+#         return jsonify({
+#             'summary': summary_text,
+#             'original_token_length': input_token_length,
+#             'reduction_amount': input_token_length - summary_token_length,
+#             'new_token_length': summary_token_length
+#         }), 200
+#
+#     except Exception as e:
+#         print(f"Error in summarize_text function: {e}")
+#         print(traceback.format_exc())
+#         return jsonify({'error': 'An error occurred.'}), 500
+#
+#
 
-        # Initialize the TextRank summarizer
-        summarizer = TextRankSummarizer()
 
-        # Tokenize the input text
-        parser = PlaintextParser.from_string(input_text, Tokenizer("english"))
 
-        # Set the number of sentences in the summary
-        num_sentences = 3
-
-        # Summarize the text
-        summary = summarizer(parser.document, num_sentences)
-
-        # Convert summary sentences to a list of strings
-        summary_sentences = [str(sentence) for sentence in summary]
-
-        return jsonify({'summary': summary_sentences}), 200
-
-    except Exception as e:
-        logging.error(f"Error in summarize_text function: {e}")
-        return jsonify({'error': 'An error occurred.'}), 500
 
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -711,7 +781,7 @@ def get_local_ip():
     return local_ip
 
 if __name__ == '__main__':
-    host = get_local_ip()
+    # host = get_local_ip()
     port = 6969
-    print(host)
+    # print(host)
     app.run(port=port)
