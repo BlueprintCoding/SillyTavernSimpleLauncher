@@ -7,6 +7,7 @@ InstallPaths.txt
 
 #Ignore old files
 .old/
+.old/*
 old/
 /Launch Scripts/.old
 
@@ -15,3 +16,5 @@ user-agreement.txt
 *.log
 GUI-Launch-Errors.txt
 STSL-Settings/flags.json
+
+.chroma_db
