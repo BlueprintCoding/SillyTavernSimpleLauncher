@@ -339,35 +339,29 @@ def close_sillytavern():
     os.system(f'"{taskkill_executable}" /f /im node.exe')
     return "Closing ST..."
 
-import subprocess
 
-import subprocess
-
-import subprocess
-import platform
-
-@app.route("/install-dependencies", methods=['GET', 'POST'])
-def install_dependencies():
-    try:
-        # Determine the system architecture
-        system_architecture = platform.architecture()[0]
-        if system_architecture == '64bit':
-            node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x64.msi'
-        else:
-            node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x86.msi'
-
-        # Download Node.js installer
-        subprocess.run(f'curl -o node_installer.msi {node_download_url}', shell=True)
-
-        # Install Node.js
-        subprocess.run('msiexec /i node_installer.msi /quiet', shell=True)
-
-        # Remove the Node.js installer
-        subprocess.run('del node_installer.msi', shell=True)
-
-        return "Node.js 18 installed successfully."
-    except Exception as e:
-        return f"Error installing Node.js 18: {str(e)}"
+# @app.route("/install-dependencies", methods=['GET', 'POST'])
+# def install_dependencies():
+#     try:
+#         # Determine the system architecture
+#         system_architecture = platform.architecture()[0]
+#         if system_architecture == '64bit':
+#             node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x64.msi'
+#         else:
+#             node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x86.msi'
+#
+#         # Download Node.js installer
+#         subprocess.run(f'curl -o node_installer.msi {node_download_url}', shell=True)
+#
+#         # Install Node.js
+#         subprocess.run('msiexec /i node_installer.msi /quiet', shell=True)
+#
+#         # Remove the Node.js installer
+#         subprocess.run('del node_installer.msi', shell=True)
+#
+#         return "Node.js 18 installed successfully."
+#     except Exception as e:
+#         return f"Error installing Node.js 18: {str(e)}"
 
 
         

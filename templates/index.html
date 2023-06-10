@@ -43,7 +43,6 @@
 
     <div class="tabs">
         <div class="tab active" onclick="showContent('launch')">Launch</div>
-        <div class="tab" onclick="showContent('install')">Install</div>
         <div class="tab" onclick="showContent('tools')">Tools</div>
         <div class="tab" onclick="showContent('support')">Support</div>
     </div>
@@ -62,6 +61,19 @@
             <button onclick="launchProfileManager()">Change ST Profile</button>
             <button onclick="editConfig()">Edit Config</button>
             <button onclick="closeSillyTavern()">Close SillyTavern</button>
+        </div>
+         <div class="sub-title"><h2>Install</h2></div>
+        <div class="button-grid">
+{#            <button onclick="install('dependencies')">Install SillyTavern Dependencies</button>#}
+            <button onclick="install('mainBranch')">Install Main Branch</button>
+            <button onclick="install('devBranch')">Install Dev Preview Branch</button>
+            <button onclick="disableButtons(); install('extras')">Install Extras</button>
+        </div>
+                 <div class="sub-title"><h2>Update</h2></div>
+        <div class="button-grid">
+            <button onclick="executeScript('Update SillyTavern', 'main')">Update Main Branch</button>
+            <button onclick="executeScript('Update SillyTavern', 'dev')">Update Dev Preview Branch</button>
+            <button onclick="executeScript('Update SillyTavern', 'extras')">Update Extras</button>
         </div>
     </div>
 
@@ -141,22 +153,6 @@
                 });
         }
 
-    </script>
-
-
-    <div class="content" id="install">
-        <div class="sub-title"><h2>Install</h2></div>
-        <div class="button-grid">
-            <button onclick="install('dependencies')">Install SillyTavern Dependencies</button>
-            <button onclick="install('mainBranch')">Install SillyTavern - Main Branch</button>
-            <button onclick="install('devBranch')">Install SillyTavern - Dev Preview Branch</button>
-            <button onclick="migrateProfile()">Migrate Existing ST Install as Profile</button>
-            <button onclick="disableButtons(); install('extras')">Install SillyTavernExtras</button>
-        </div>
-    </div>
-
-
-    <script>
         function showLoading() {
             document.getElementById('loadingContainer').style.display = 'flex';
         }
@@ -193,13 +189,9 @@
     <div class="content" id="tools">
         <div class="sub-title"><h2>Tools</h2></div>
         <div class="button-grid">
+            <button onclick="migrateProfile()">Migrate Existing ST Install as Profile</button>
             <button onclick="backupST()">Backup SillyTavern Files</button>
             <button onclick="openOptimizePrompt()">OptimizePrompt GUI</button>
-        </div>
-        <div class="button-grid" style="padding-top:10px;">
-            <button onclick="executeScript('Update SillyTavern', 'main')">Update SillyTavern Main Branch</button>
-            <button onclick="executeScript('Update SillyTavern', 'dev')">Update SillyTavern Dev Branch</button>
-            <button onclick="executeScript('Update SillyTavern', 'extras')">Update SillyTavern Extras</button>
         </div>
     </div>
 
