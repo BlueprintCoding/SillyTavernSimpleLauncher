@@ -66,6 +66,7 @@ h1 {
 .sub-title {
     margin: 0 auto;
     text-align: center;
+    text-transform: uppercase;
 }
 
 .content {
@@ -132,7 +133,7 @@ h1 {
     height: 60px;
     font-weight: bolder;
     letter-spacing: 1px;
-    
+
 }
 
 .button-grid button:hover {

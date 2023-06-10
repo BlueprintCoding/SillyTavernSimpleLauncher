@@ -36,7 +36,7 @@
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="modules" value="sd" id="sd">
-                                <label class="form-check-label" for="sd">SD</label>
+                                <label class="form-check-label" for="sd">StableDiffusion</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="modules" value="silero-tts" id="silero-tts">
@@ -53,13 +53,15 @@
                             <div class="form-group">
                                 <label for="custom-flags">Custom Flags/Parameters</label>
                                 <input class="form-control" type="text" name="custom_flags" id="custom-flags" placeholder="Enter custom flags/parameters">
-                                <label>For example, to load 24 emotions: "--classification-model=joeddav/distilbert-base-uncased-go-emotions-student" See all <a target="_blank" href="https://github.com/SillyTavern/SillyTavern-extras#additional-options">flags here</a></label>
+                                <label>For example, to load 28 emotions: "--classification-model=joeddav/distilbert-base-uncased-go-emotions-student" See all <a target="_blank" href="https://github.com/SillyTavern/SillyTavern-extras#additional-options">flags here</a></label>
                             </div>
                             <br>
                             <div class="button-grid">
-                                <button class="btn btn-primary" type="submit">Launch Extras</button>
+                                <button class="btn btn-primary" type="submit">Start Extras</button>
 {#                                <button class="btn btn-primary" onclick="closeExtras()">Close Extras</button>#}
                             </div>
+                             <label>Please note this launcher does not currently automatically install StableDiffusion, this will come in a future update</label>
+                            <label>You can easily <a href="https://github.com/easydiffusion/easydiffusion">install StableDiffusion with this 3rd party installer</a></label>
                         </form>
                     </div>
                 </div>
