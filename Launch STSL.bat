@@ -27,7 +27,16 @@ REM Install NVM
 echo Installing NVM...
 python -m pip install nvm
 
+REM Set up NVM environment variables
+echo Setting up NVM environment variables...
+call nvm setup
 
+REM Install the latest LTS version of Node.js using NVM
+echo Installing Node.js LTS...
+call nvm install lts
+
+REM Use the installed Node.js version
+call nvm use lts
 
 REM Check if venv exists
 if not exist venv (
@@ -46,8 +55,6 @@ python -m pip install flask nltk transformers
 REM Download NLTK resources
 echo Downloading NLTK resources...
 python -m nltk.downloader punkt stopwords averaged_perceptron_tagger maxent_ne_chunker words
-
-
 
 echo All requirements installed successfully.
 
