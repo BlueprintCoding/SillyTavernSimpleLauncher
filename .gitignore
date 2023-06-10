@@ -6,6 +6,7 @@ Optimization/venv
 InstallPaths.txt
 
 #Ignore old files
+.old/
 old/
 /Launch Scripts/.old
 
