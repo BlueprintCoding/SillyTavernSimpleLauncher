@@ -5,12 +5,6 @@ Optimization/venv
 #ignore install path files.
 InstallPaths.txt
 
-#Ignore old files
-.old/
-.old/*
-old/
-/Launch Scripts/.old
-
 #Ignore Log files
 user-agreement.txt
 *.log
