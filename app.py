@@ -13,27 +13,13 @@ from nltk.tokenize import word_tokenize, sent_tokenize
 import string
 import traceback
 
-# Create a logger instance
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# Create a file handler and set its level to DEBUG
-file_handler = logging.FileHandler("app.log")
-file_handler.setLevel(logging.DEBUG)
-
-# Create a formatter and add it to the file handler
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-file_handler.setFormatter(formatter)
-
-# Add the file handler to the logger
-logger.addHandler(file_handler)
-
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
 # Get the full path to the taskkill executable
 taskkill_executable = os.path.join(os.environ['WINDIR'], 'System32', 'taskkill.exe')
 # Get the parent directory of the current script file
 script_directory = os.path.dirname(os.path.abspath(__file__))
+
 
 # Create the Logs folder if it doesn't exist
 logs_folder = os.path.join(script_directory, "Logs")
@@ -43,6 +29,21 @@ if not os.path.exists(logs_folder):
 # Configure logging
 log_file_path = os.path.join(logs_folder, "STSL.log")
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Create a logger instance
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler and set its level to DEBUG
+file_handler = logging.FileHandler(log_file_path)
+file_handler.setLevel(logging.DEBUG)
+
+# Create a formatter and add it to the file handler
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
 
 
 def copy_instance_files(source, destination):
@@ -323,8 +324,9 @@ def install_dev_branch():
         return "Silly Tavern Dev Branch Cloned Successfully."
 
 # Define shared path/directory variables as global
-sillytavern_extras_path = None
-venv_path = None
+parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
+sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
+venv_path = os.path.join(sillytavern_extras_path, "venv")
 
 @app.route('/extras-manager', methods=['POST', 'GET'])
 def extras_manager():
@@ -343,10 +345,6 @@ def extras_manager():
 
         return redirect('/')
     else:
-        parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
-        sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
-        venv_path = os.path.join(sillytavern_extras_path, "venv")
-
         if not os.path.exists(sillytavern_extras_path) or not os.path.exists(venv_path):
             alert_message = "Please install SillyTavern Extras first."
             return render_template('index.html', alert_message=alert_message)
@@ -401,13 +399,10 @@ def start_extras(launch_extras, selected_modules):
 
         if launch_extras:
             enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
-            sillytavern_extras_path = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
             activate_venv = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras", "venv", "Scripts", "activate.bat"))
+                os.path.join(venv_path, "Scripts", "activate.bat"))
             extras_port = "--port=5100"
             extras_path = os.path.join(sillytavern_extras_path, "server.py")
-            venv_path = os.path.join(sillytavern_extras_path, "venv")
             venv_python = os.path.join(venv_path, "Scripts", "python.exe")
 
             if os.path.exists(venv_python):
