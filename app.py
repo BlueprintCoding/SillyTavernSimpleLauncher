@@ -52,10 +52,14 @@ taskkill_executable = os.path.join(os.environ['WINDIR'], 'System32', 'taskkill.e
 # Get the parent directory of the current script file
 script_directory = os.path.dirname(os.path.abspath(__file__))
 
-# Configure logging
-log_file_path = os.path.join(script_directory, "Logs", "migration.log")
-logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Create the Logs folder if it doesn't exist
+logs_folder = os.path.join(script_directory, "Logs")
+if not os.path.exists(logs_folder):
+    os.makedirs(logs_folder)
 
+# Configure logging
+log_file_path = os.path.join(logs_folder, "STSL.log")
+logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def copy_instance_files(source, destination):
     public_folder = os.path.join(source, "public")
