@@ -1,7 +1,28 @@
 @echo off
+SETLOCAL ENABLEDELAYEDEXPANSION
+
+:: Get the path of the parent folder
+for %%I in ("%~dp0..\..") do set "ParentFolder=%%~fI"
+
+:: Check for permissions
+>nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+if '%errorlevel%' NEQ '0' (
+    echo Requesting administrative privileges...
+    goto UACPrompt
+) else ( goto gotAdmin )
+
+:UACPrompt
+    echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
+    echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
+    "%temp%\getadmin.vbs"
+    exit /B
+
+:gotAdmin
+    if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
+    pushd "%CD%"
+    CD /D "%~dp0"
 REM Set the root directory to the directory containing this batch file
 set "root_dir=%~dp0"
-
 
 REM Check if Python is installed
 set "python_exe="
@@ -26,20 +47,18 @@ if errorlevel 1 (
     python -m ensurepip --upgrade
 )
 
-REM Install NVM
-echo Installing NVM...
-python -m pip install nvm
+REM Check if Chocolatey is installed
+choco --version >nul 2>&1
 
-REM Set up NVM environment variables
-echo Setting up NVM environment variables...
-call nvm setup
+REM If Chocolatey is not installed, install it
+if errorlevel 1 (
+    echo Chocolatey is not installed. Installing Chocolatey...
+    @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+)
 
-REM Install the latest LTS version of Node.js using NVM
+REM Install Node.js LTS via Chocolatey
 echo Installing Node.js LTS...
-call nvm install lts
-
-REM Use the installed Node.js version
-call nvm use lts
+choco install nodejs-lts --force -y
 
 REM Check if venv exists
 if not exist venv (
@@ -57,7 +76,8 @@ python -m pip install flask nltk transformers
 
 REM Download NLTK resources
 echo Downloading NLTK resources...
-python -m nltk.downloader punkt stopwords averaged_perceptron_tagger maxent_ne_chunker words
+python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk.download('averaged_perceptron_tagger'); nltk.download('maxent_ne_chunker'); nltk.download('words')"
+
 
 echo All requirements installed successfully.
 

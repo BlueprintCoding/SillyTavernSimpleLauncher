@@ -26,14 +26,6 @@ if errorlevel 1 (
     exit /b
 )
 
-REM Check if NVM is installed
-nvm version >nul 2>&1
-if errorlevel 1 (
-    echo NVM is not installed.
-    echo Please run "Install STSL.bat" to install all the requirements.
-    pause
-    exit /b
-)
 
 REM Check if Node.js is installed
 node --version >nul 2>&1
