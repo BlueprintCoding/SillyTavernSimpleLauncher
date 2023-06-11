@@ -12,7 +12,19 @@
 <body>
 <div class="container">
     <div class="title"><h1>SillyTavern Simple Launcher</h1></div>
-
+    <!-- Add alert container -->
+    {% if alert_message %}
+    <div class="alert">
+        <script>
+            Swal.fire({
+                icon: 'info',
+                title: 'SillyTavern Extras Required',
+                text: '{{ alert_message }}',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    </div>
+    {% endif %}
     <div class="tabs">
         <div class="tab active" onclick="showContent('launch')">Launch</div>
         <div class="tab" onclick="showContent('tools')">Tools</div>
@@ -45,7 +57,9 @@
         <div class="button-grid">
             <button onclick="executeScript('Update SillyTavern', 'main')">Update Main Branch</button>
             <button onclick="executeScript('Update SillyTavern', 'dev')">Update Dev Preview Branch</button>
-            <button onclick="executeScript('Update SillyTavern', 'extras')">Update Extras</button>
+            <button onclick="executeScript('Update' +
+             '' +
+              ' SillyTavern', 'extras')">Update Extras</button>
         </div>
     </div>
 

@@ -1,5 +1,8 @@
 @echo off
 
+REM Set the root directory to the directory containing this batch file
+set "root_dir=%~dp0"
+
 REM Check if Python is installed
 set "python_exe="
 for /f "delims=" %%i in ('python -c "import sys; print(sys.executable)"') do (
@@ -42,14 +45,14 @@ if errorlevel 1 (
 )
 
 REM Check if the virtual environment exists
-if not exist venv (
+if not exist "%root_dir%\venv" (
     echo Virtual environment not found.
     echo Please run "Install STSL.bat" to install all the requirements.
     pause
     exit /b
 )
 REM Activate the virtual environment
-call venv\Scripts\activate.bat
+call "%root_dir%\venv\Scripts\activate.bat"
 
 REM Check if required Python packages are installed
 python -c "import flask" >nul 2>&1
@@ -73,6 +76,7 @@ REM All requirements are installed
 echo All requirements are already installed. Launching the server...
 
 REM Launch the app.py server
+cd "%root_dir%"
 start /b python app.py
 
 REM Wait for the server to start

@@ -12,12 +12,6 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 import string
 import traceback
-# from transformers import AutoTokenizer, LongT5ForConditionalGeneration
-
-# # Define model globally
-# model = None
-# # Define tokenizer globally
-# tokenizer = None
 
 # Create a logger instance
 logger = logging.getLogger(__name__)
@@ -34,17 +28,6 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
-# def download_nltk_resources():
-#     resources = ['punkt', 'stopwords', 'averaged_perceptron_tagger', 'maxent_ne_chunker', 'words']
-#     for resource in resources:
-#         try:
-#             nltk.data.find(resource)
-#         except LookupError:
-#             nltk.download(resource)
-
-# Call the download function before using the NLTK resources
-# download_nltk_resources()
-
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
 # Get the full path to the taskkill executable
@@ -60,6 +43,7 @@ if not os.path.exists(logs_folder):
 # Configure logging
 log_file_path = os.path.join(logs_folder, "STSL.log")
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def copy_instance_files(source, destination):
     public_folder = os.path.join(source, "public")
@@ -140,7 +124,8 @@ def migrate_instance():
         logging.info(f"New profile created: {new_instance_name}-{branch_choice_var}")
 
         # Return a JSON response indicating success
-        return jsonify({"success": True, "message": f"New profile '{new_instance_name}-{branch_choice_var}' created successfully."})
+        return jsonify({"success": True,
+                        "message": f"New profile '{new_instance_name}-{branch_choice_var}' created successfully."})
 
     except Exception as e:
         logging.error(str(e))
@@ -148,27 +133,10 @@ def migrate_instance():
         # Return a JSON response indicating error
         return jsonify({"success": False, "message": f"Error creating the new profile: {str(e)}"})
 
-# @app.route('/optimize-prompt')
-# def optimize_prompt():
-#     global tokenizer
-#     global model
-#
-#     # Check if tokenizer and model are already loaded
-#     if tokenizer is None or model is None:
-#         # Download Pegasus model if not already downloaded
-#         model_name = "Stancld/longt5-tglobal-large-16384-pubmed-3k_steps"  # Example LongT5 model for text generation
-#         try:
-#             model = LongT5ForConditionalGeneration.from_pretrained(model_name)
-#             tokenizer = AutoTokenizer.from_pretrained("Stancld/longt5-tglobal-large-16384-pubmed-3k_steps")
-#         except:
-#             return jsonify({'error': 'Failed to download LongT5 model.'}), 500
-#
-#     return render_template('optimize_prompt.html')
 
 @app.route('/optimize-prompt')
 def optimize_prompt():
     return render_template('optimize_prompt.html')
-
 
 
 @app.route("/launch-main", methods=['POST'])
@@ -179,6 +147,7 @@ def launch_main():
     subprocess.Popen(start_script_path, shell=True)
     return "Launching ST Main..."
 
+
 @app.route("/launch-dev", methods=['POST'])
 def launch_dev():
     branch_name = "SillyTavern-DevBranch"
@@ -186,6 +155,7 @@ def launch_dev():
     start_script_path = os.path.join(start_script_dir, "Start.bat")
     subprocess.Popen(start_script_path, shell=True)
     return "Launching ST Dev..."
+
 
 # List of available modules
 modules = [
@@ -198,33 +168,6 @@ modules = [
     "chromadb"
 ]
 
-# @app.route("/launch-extras", methods=['POST'])
-# def launch_extras():
-#     batch_file_path = os.path.join(home_folder, "Launch Scripts/Launch ST Extras.bat")
-#     subprocess.Popen(batch_file_path, shell=True)
-#     return "Launching ST Extras..."
-
-@app.route('/extras-manager', methods=['POST', 'GET'])
-def extras_manager():
-    if request.method == 'POST':
-        selected_modules = request.form.getlist('modules')
-        custom_flags = request.form.get('custom_flags')
-
-        # Append custom flags to the selected modules if a value is provided
-        if custom_flags:
-            selected_modules.append(custom_flags)
-
-        launch_server(selected_modules)
-
-        return redirect('/')
-    else:
-        return render_template('extras_manager.html')
-
-
-def launch_server(selected_modules):
-    launch_extras = True
-    print("made it here to launch server")
-    install_extras(launch_extras, selected_modules)
 
 @app.route('/configuration', methods=['GET', 'POST'])
 def configuration():
@@ -238,7 +181,8 @@ def configuration():
     default_values_dev = parse_config_file(config_file_path_dev)
 
     # Pass the default values to the HTML template
-    return render_template('edit_config.html', default_values=default_values_main, default_values_dev=default_values_dev)
+    return render_template('edit_config.html', default_values=default_values_main,
+                           default_values_dev=default_values_dev)
 
 
 def parse_config_file(file_path):
@@ -265,6 +209,7 @@ def parse_config_file(file_path):
                 default_values[key] = value
     return default_values
 
+
 @app.route('/config-update', methods=['POST'])
 def update_configuration():
     branch = request.form['branch']
@@ -284,7 +229,7 @@ def update_configuration():
     app_dir = os.path.dirname(os.path.abspath(__file__))
     config_file_path_main = os.path.join(app_dir, '..', 'SillyTavern-MainBranch', 'config.conf')
     config_file_path_dev = os.path.join(app_dir, '..', 'SillyTavern-DevBranch', 'config.conf')
-    
+
     # Set the configuration file path based on the branch selection
     if branch == "Select Branch":
         return 'Error: Select a branch.'
@@ -311,17 +256,21 @@ def update_configuration():
         elif line.startswith("const basicAuthMode"):
             updated_content.append(f"const basicAuthMode = {str(basic_auth_mode).lower()}; //{line.split('//', 1)[1]}")
         elif line.startswith("const basicAuthUser"):
-            updated_content.append(f"const basicAuthUser = {{username: \"{basic_auth_username}\", password: \"{basic_auth_password}\"}}; //{line.split('//', 1)[1]}")
+            updated_content.append(
+                f"const basicAuthUser = {{username: \"{basic_auth_username}\", password: \"{basic_auth_password}\"}}; //{line.split('//', 1)[1]}")
         elif line.startswith("const disableThumbnails"):
-            updated_content.append(f"const disableThumbnails = {str(disable_thumbnails).lower()}; //{line.split('//', 1)[1]}")
+            updated_content.append(
+                f"const disableThumbnails = {str(disable_thumbnails).lower()}; //{line.split('//', 1)[1]}")
         elif line.startswith("const autorun"):
             updated_content.append(f"const autorun = {str(autorun).lower()}; //{line.split('//', 1)[1]}")
         elif line.startswith("const enableExtensions"):
-            updated_content.append(f"const enableExtensions = {str(enable_extensions).lower()}; //{line.split('//', 1)[1]}")
+            updated_content.append(
+                f"const enableExtensions = {str(enable_extensions).lower()}; //{line.split('//', 1)[1]}")
         elif line.startswith("const listen"):
             updated_content.append(f"const listen = {str(listen).lower()}; //{line.split('//', 1)[1]}")
         elif line.startswith("const allowKeysExposure"):
-            updated_content.append(f"const allowKeysExposure = {str(allow_keys_exposure).lower()}; //{line.split('//', 1)[1]}")
+            updated_content.append(
+                f"const allowKeysExposure = {str(allow_keys_exposure).lower()}; //{line.split('//', 1)[1]}")
         else:
             updated_content.append(line)
 
@@ -337,38 +286,13 @@ def update_configuration():
     </script>
     '''
 
-    
+
 @app.route("/close-sillytavern", methods=['POST'])
 def close_sillytavern():
     os.system(f'"{taskkill_executable}" /f /im node.exe')
     return "Closing ST..."
 
 
-# @app.route("/install-dependencies", methods=['GET', 'POST'])
-# def install_dependencies():
-#     try:
-#         # Determine the system architecture
-#         system_architecture = platform.architecture()[0]
-#         if system_architecture == '64bit':
-#             node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x64.msi'
-#         else:
-#             node_download_url = 'https://nodejs.org/dist/v18.24.0/node-v18.24.0-x86.msi'
-#
-#         # Download Node.js installer
-#         subprocess.run(f'curl -o node_installer.msi {node_download_url}', shell=True)
-#
-#         # Install Node.js
-#         subprocess.run('msiexec /i node_installer.msi /quiet', shell=True)
-#
-#         # Remove the Node.js installer
-#         subprocess.run('del node_installer.msi', shell=True)
-#
-#         return "Node.js 18 installed successfully."
-#     except Exception as e:
-#         return f"Error installing Node.js 18: {str(e)}"
-
-
-        
 @app.route("/install-main-branch", methods=['GET', 'POST'])
 def install_main_branch():
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
@@ -382,6 +306,7 @@ def install_main_branch():
         clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "main", sillytavern_path]
         subprocess.Popen(clone_command).wait()
         return "Silly Tavern Main Branch Cloned Successfully."
+
 
 @app.route("/install-dev-branch", methods=['POST'])
 def install_dev_branch():
@@ -397,12 +322,45 @@ def install_dev_branch():
         subprocess.Popen(clone_command).wait()
         return "Silly Tavern Dev Branch Cloned Successfully."
 
+# Define shared path/directory variables as global
+sillytavern_extras_path = None
+venv_path = None
 
-@app.route("/install-extras", methods=['GET', 'POST'])
-def install_extras(launch_extras, selected_modules):
-    try:
+@app.route('/extras-manager', methods=['POST', 'GET'])
+def extras_manager():
+    global sillytavern_extras_path, venv_path
+
+    if request.method == 'POST':
+        selected_modules = request.form.getlist('modules')
+        custom_flags = request.form.get('custom_flags')
+
+        # Append custom flags to the selected modules if a value is provided
+        if custom_flags:
+            selected_modules.append(custom_flags)
+
+        launch_extras = True
+        start_extras(launch_extras, selected_modules)
+
+        return redirect('/')
+    else:
         parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
         sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
+        venv_path = os.path.join(sillytavern_extras_path, "venv")
+
+        if not os.path.exists(sillytavern_extras_path) or not os.path.exists(venv_path):
+            alert_message = "Please install SillyTavern Extras first."
+            return render_template('index.html', alert_message=alert_message)
+
+        return render_template('extras_manager.html')
+
+
+@app.route("/install-extras", methods=['GET', 'POST'])
+def install_extras():
+    global sillytavern_extras_path, venv_path
+
+    try:
+        if not sillytavern_extras_path or not venv_path:
+            return jsonify({'error': 'SillyTavern Extras path not found.'}), 500
 
         if os.path.exists(sillytavern_extras_path):
             logger.info("SillyTavern-extras is already installed. Skipping clone...")
@@ -424,24 +382,42 @@ def install_extras(launch_extras, selected_modules):
         subprocess.run(
             [os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
 
+        return "SillyTavern-extras Installed..."
+
+    except Exception as e:
+        logger.error(f"Error in install_extras function: {e}")
+        logger.exception("An error occurred during installation.")
+
+        return jsonify({'error': 'An error occurred during installation.'}), 500
+
+
+@app.route("/start-extras", methods=['GET', 'POST'])
+def start_extras(launch_extras, selected_modules):
+    global sillytavern_extras_path, venv_path
+
+    try:
+        if not sillytavern_extras_path or not venv_path:
+            return jsonify({'error': 'SillyTavern Extras path not found.'}), 500
+
         if launch_extras:
             enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
-            script_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
+            sillytavern_extras_path = os.path.abspath(
+                os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras"))
             activate_venv = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), "..", "SillyTavern-extras", "venv", "Scripts", "activate.bat"))
             extras_port = "--port=5100"
-            script_path = os.path.join(script_directory, "server.py")
-
+            extras_path = os.path.join(sillytavern_extras_path, "server.py")
+            venv_path = os.path.join(sillytavern_extras_path, "venv")
             venv_python = os.path.join(venv_path, "Scripts", "python.exe")
 
             if os.path.exists(venv_python):
                 logger.debug("Virtual environment exists.")
-            if os.path.exists(script_path):
-                logger.debug("Script path exists.")
+            if os.path.exists(extras_path):
+                logger.debug("Extras path exists.")
 
             subprocess.Popen(
                 ['start', 'cmd', '/k',
-                 f'call {activate_venv} && {venv_python} {script_path} {enabled_modules_arg} {extras_port}'],
+                 f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}'],
                 shell=True,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
@@ -461,10 +437,6 @@ def install_extras(launch_extras, selected_modules):
         logger.exception("An error occurred during installation.")
 
         return jsonify({'error': 'An error occurred during installation.'}), 500
-
-
-
-
 
 
 @app.route("/install", methods=['POST'])
@@ -556,6 +528,7 @@ def backup_sillytavern_files():
 
     return 'Backup completed successfully.'
 
+
 def copy_files(source_dir, destination_dir, directories):
     for directory in directories:
         source_path = os.path.join(source_dir, directory)
@@ -605,9 +578,8 @@ def update_sillytavern():
     return '\n'.join(output_messages)
 
 
-
 def load_instances():
-    instances_folder = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-Instances")
+    instances_folder = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-Instances")
     instance_names = []
 
     if os.path.exists(instances_folder):
@@ -616,13 +588,12 @@ def load_instances():
 
     return instance_names
 
+
 @app.route('/profile-manager', methods=['POST', 'GET'])
 def profile_manager():
     print("Launching Profile Manager...")
     instances = load_instances()
     return render_template('profile_manager.html', instances=instances)
-
-
 
 
 def copy_instance_files(source, destination):
@@ -649,17 +620,18 @@ def copy_instance_files(source, destination):
         if os.path.exists(source_file):
             shutil.copy2(source_file, destination_file)
 
+
 @app.route('/load-profile', methods=['POST'])
 def load_profile():
     data = request.get_json()
     selected_instance = data['instance']
     destination_branch = data['destinationBranch']
-    instance_path = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-Instances", selected_instance)
+    instance_path = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-Instances", selected_instance)
 
     if destination_branch == 'main':
-        destination_path = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-MainBranch", "public")
+        destination_path = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-MainBranch", "public")
     else:
-        destination_path = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-DevBranch", "public")
+        destination_path = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-DevBranch", "public")
 
     try:
         copy_instance_files(instance_path, destination_path)
@@ -682,12 +654,12 @@ def save_profile():
 
     if branch_choice == 'main':
         destination_branch = "main"
-        destination_path = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-MainBranch", "public")
+        destination_path = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-MainBranch", "public")
     else:
         destination_branch = "dev"
-        destination_path = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-DevBranch", "public")
+        destination_path = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-DevBranch", "public")
 
-    new_instance_folder = os.path.join(os.path.dirname(__file__), "..",  "SillyTavern-Instances",
+    new_instance_folder = os.path.join(os.path.dirname(__file__), "..", "SillyTavern-Instances",
                                        instance_name + "-" + destination_branch)
 
     if os.path.exists(new_instance_folder):
@@ -698,6 +670,7 @@ def save_profile():
         return 'Save successful.'
     except Exception as e:
         return str(e), 500
+
 
 @app.route('/delete-profile', methods=['POST'])
 def delete_profile():
@@ -735,48 +708,6 @@ def stem_text():
         logging.error(f"Error in stem_text function: {e}")
         return jsonify({'error': 'An error occurred.'}), 500
 
-# @app.route('/summarize-text', methods=['POST'])
-# def summarize_text():
-#     try:
-#         input_text = request.json.get('input_text')
-#         token_amount = int(request.json.get('token_amount'))
-#         if not input_text:
-#             return jsonify({'error': 'Please enter some text.'}), 400
-#
-#         # Tokenize input text
-#         input_tokens = tokenizer.tokenize(input_text)
-#         input_token_length = len(input_tokens)
-#
-#         # Generate summary
-#         inputs = tokenizer.prepare_seq2seq_batch([input_text], truncation=True, padding='longest', return_tensors='pt')
-#         summary_ids = model.generate(inputs['input_ids'], max_length=token_amount, num_beams=4, early_stopping=True)
-#         summary_text = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-#         summary_tokens = tokenizer.tokenize(summary_text)
-#         summary_token_length = len(summary_tokens)
-#
-#         return jsonify({
-#             'summary': summary_text,
-#             'original_token_length': input_token_length,
-#             'reduction_amount': input_token_length - summary_token_length,
-#             'new_token_length': summary_token_length
-#         }), 200
-#
-#     except Exception as e:
-#         print(f"Error in summarize_text function: {e}")
-#         print(traceback.format_exc())
-#         return jsonify({'error': 'An error occurred.'}), 500
-#
-#
-
-
-
-
-def get_local_ip():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('8.8.8.8', 80))
-    local_ip = s.getsockname()[0]
-    s.close()
-    return local_ip
 
 if __name__ == '__main__':
     # host = get_local_ip()

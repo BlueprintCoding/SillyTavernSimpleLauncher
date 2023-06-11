@@ -1,4 +1,7 @@
 @echo off
+REM Set the root directory to the directory containing this batch file
+set "root_dir=%~dp0"
+
 
 REM Check if Python is installed
 set "python_exe="
@@ -59,6 +62,7 @@ python -m nltk.downloader punkt stopwords averaged_perceptron_tagger maxent_ne_c
 echo All requirements installed successfully.
 
 REM Launch the app.py server
+cd "%root_dir%"
 echo Launching the server...
 start /b python app.py
 
