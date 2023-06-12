@@ -410,7 +410,7 @@ def start_extras(launch_extras, selected_modules):
             if os.path.exists(extras_path):
                 logger.debug("Extras path exists.")
 
-            subprocess.Popen(
+            process = subprocess.Popen(
                 ['start', 'cmd', '/k',
                  f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}'],
                 shell=True,
