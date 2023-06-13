@@ -7,11 +7,16 @@ from flask import Flask, render_template, request, jsonify, redirect
 from datetime import datetime
 import socket
 import nltk
+import shutil
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
 import string
 import traceback
+import requests
+from tqdm import tqdm
+import time
+import threading
 
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
@@ -389,9 +394,8 @@ def install_extras():
         return jsonify({'error': 'An error occurred during installation.'}), 500
 
 
-@app.route("/start-extras", methods=['GET', 'POST'])
 def start_extras(launch_extras, selected_modules):
-    global sillytavern_extras_path, venv_path
+    global sillytavern_extras_path, venv_path, stable_diffusion_dir
 
     try:
         if not sillytavern_extras_path or not venv_path:
@@ -399,20 +403,34 @@ def start_extras(launch_extras, selected_modules):
 
         if launch_extras:
             enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
-            activate_venv = os.path.abspath(
-                os.path.join(venv_path, "Scripts", "activate.bat"))
+            activate_venv = os.path.abspath(os.path.join(venv_path, "Scripts", "activate.bat"))
             extras_port = "--port=5100"
             extras_path = os.path.join(sillytavern_extras_path, "server.py")
             venv_python = os.path.join(venv_path, "Scripts", "python.exe")
+            stable_diffusion_dir = os.path.join(home_folder, "StableDiffusion")
 
             if os.path.exists(venv_python):
                 logger.debug("Virtual environment exists.")
             if os.path.exists(extras_path):
                 logger.debug("Extras path exists.")
 
+            # Execute webui.bat if "sd" module is selected
+            if "sd" in selected_modules:
+                webui_bat_path = os.path.join(stable_diffusion_dir, "webui-user.bat")
+                print(webui_bat_path)
+
+                # Change the working directory to the StableDiffusion folder
+                os.chdir(stable_diffusion_dir)
+
+                # Start StableDiffusion in a new shell using a separate thread
+                stable_diffusion_thread = threading.Thread(target=lambda: subprocess.run([webui_bat_path], shell=True))
+                stable_diffusion_thread.start()
+
+                # Wait for StableDiffusion to finish loading
+                wait_for_stable_diffusion()
+
             process = subprocess.Popen(
-                ['start', 'cmd', '/k',
-                 f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}'],
+                ['start', 'cmd', '/k', f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}'],
                 shell=True,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
@@ -433,6 +451,19 @@ def start_extras(launch_extras, selected_modules):
 
         return jsonify({'error': 'An error occurred during installation.'}), 500
 
+def wait_for_stable_diffusion():
+    url = "http://127.0.0.1:7860/"
+
+    # Check if StableDiffusion web UI is accessible
+    while True:
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                break
+        except requests.exceptions.ConnectionError:
+            pass
+
+        time.sleep(1)  # Wait for 1 second before retrying
 
 @app.route("/install", methods=['POST'])
 def install():
@@ -702,6 +733,112 @@ def stem_text():
     except Exception as e:
         logging.error(f"Error in stem_text function: {e}")
         return jsonify({'error': 'An error occurred.'}), 500
+
+
+
+@app.route("/install-stablediffusion", methods=['POST'])
+def install_stablediffusion():
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    stable_diffusion_dir = os.path.join(root_dir, "StableDiffusion")
+    models_dir = os.path.join(stable_diffusion_dir, "models", "Stable-diffusion")
+    git_repo = "https://github.com/AUTOMATIC1111/stable-diffusion-webui.git"
+
+    try:
+        # Check if the StableDiffusion folder exists
+        if not os.path.exists(stable_diffusion_dir):
+            # Clone the git repository into the StableDiffusion folder
+            os.system(f"git clone {git_repo} {stable_diffusion_dir}")
+
+        # Get the selected models from the request
+        selected_models = request.json.get('models', [])
+
+        # Model IDs and names
+        model_info = {
+            "model2": {
+                "id": 15236,
+                "name": "Deliberate"
+            },
+            "model3": {
+                "id": 11745,
+                "name": "ChilloutMix"
+            },
+            "model4": {
+                "id": 94640,
+                "name": "majicMIX"
+            },
+            "model5": {
+                "id": 94081,
+                "name": "DreamShaper"
+            },
+            "model6": {
+                "id": 29460,
+                "name": "Realistic Vision"
+            },
+            "model7": {
+                "id": 4007,
+                "name": "Protogen"
+            },
+            "model8": {
+                "id": 48423,
+                "name": "CoffeeNSFW"
+            },
+            "model9": {
+                "id": 17233,
+                "name": "AbyssOrangeMix3"
+            },
+            "model10": {
+                "id": 6878,
+                "name": "Corneo's 7th Heaven Mix"
+            }
+        }
+
+        # Download the selected models
+        for model in selected_models:
+            if model in model_info:
+                model_id = model_info[model]["id"]
+                model_name = model_info[model]["name"]
+                model_filename = f"{model_name}.safetensors"
+                model_path = os.path.join(models_dir, model_filename)
+                model_url = f"https://civitai.com/api/download/models/{model_id}"
+
+                # Download the model using requests with tqdm progress bar
+                print(f"Downloading model '{model_name}' from: {model_url}")
+                response = requests.get(model_url, stream=True, headers={"content-disposition": "attachment"})
+
+                response.raise_for_status()  # Raise an exception if download fails
+
+                with open(model_path, 'wb') as file:
+                    total_size = int(response.headers.get('content-length', 0))
+                    progress_bar = tqdm(total=total_size, unit='B', unit_scale=True)
+
+                    for data in response.iter_content(chunk_size=4096):
+                        file.write(data)
+                        progress_bar.update(len(data))
+
+                    progress_bar.close()
+
+                print(f"Model '{model_name}' saved at: {model_path}")
+
+        # Edit the webui-user.bat file
+        webui_user_bat_path = os.path.join(stable_diffusion_dir, "webui-user.bat")
+        if os.path.exists(webui_user_bat_path):
+            shutil.copy(webui_user_bat_path, webui_user_bat_path + ".backup")  # Create a backup of the original file
+
+            # Open the webui-user.bat file for editing
+            with open(webui_user_bat_path, 'w') as file:
+                file.write("@echo off\n\n")
+                file.write("set PYTHON=\n")
+                file.write("set GIT=\n")
+                file.write("set VENV_DIR=\n")
+                file.write("set COMMANDLINE_ARGS= --api\n\n")
+                file.write("call webui.bat")
+
+        return jsonify({"message": "StableDiffusion and models installed successfully."}), 200
+
+    except Exception as e:
+        print(f"An error occurred during installation: {e}")
+        return jsonify({"error": f"An error occurred during installation: {e}"}), 500
+
 
 
 if __name__ == '__main__':

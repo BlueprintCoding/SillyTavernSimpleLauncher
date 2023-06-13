@@ -274,3 +274,75 @@ h1 {
     width: 100%;
     min-height: 150px;
 }
+
+/* styles.css */
+@media (min-width: 576px) {
+.modal-dialog {
+    max-width: 750px!important;
+}
+    }
+
+.modal-content {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-radius: 10px;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 1rem;
+    background-color: #DF9712;
+    color: #000000;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.modal-title {
+    color: #000000;
+}
+
+.modal-body {
+    padding: 1rem;
+    background-color: #1e1e1e;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 1rem;
+    background-color: #1e1e1e;
+}
+
+.modal-footer button {
+    background-color: #DF9712;
+    color: #000000;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    height: 60px;
+    font-weight: bolder;
+    letter-spacing: 1px;
+}
+
+.modal-footer button:hover {
+    background-color: #815b0a;
+}
+
+.modal-body h6 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.modal-body .form-check {
+    margin-bottom: 0.5rem;
+}
+
+.modal-body .form-check-input {
+    background-color: #40444b;
+    border-color: #7289da;
+}
+
+.modal-body .form-check-label {
+    color: #ffffff;
+}

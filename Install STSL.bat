@@ -72,7 +72,7 @@ call venv\Scripts\activate.bat
 REM Install required Python packages
 echo Installing required Python packages...
 python -m pip install --upgrade pip
-python -m pip install flask nltk transformers
+python -m pip install flask nltk transformers requests tqdm shutil
 
 REM Download NLTK resources
 echo Downloading NLTK resources...
