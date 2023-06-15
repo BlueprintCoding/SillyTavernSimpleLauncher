@@ -124,7 +124,11 @@
                     enableButtons();
                 });
         }
-
+// function enableButton(module) {
+//   const button = document.querySelector(`button[data-module="${module}"]`);
+//   button.removeAttribute('disabled');
+//   button.classList.remove('disabled-button');
+// }
 
         function migrateProfile() {
             window.location.href = "/migrate-profile";

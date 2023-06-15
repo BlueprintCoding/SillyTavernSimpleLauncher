@@ -24,18 +24,23 @@ if '%errorlevel%' NEQ '0' (
 REM Set the root directory to the directory containing this batch file
 set "root_dir=%~dp0"
 
+REM Check if winget is installed
+winget --version >nul 2>&1
+
+REM If winget is not installed, install it
+if errorlevel 1 (
+    echo winget is not installed. Installing winget...
+    @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://aka.ms/installwinget'))"
+)
+
 REM Check if Python is installed
 set "python_exe="
 for /f "delims=" %%i in ('python -c "import sys; print(sys.executable)"') do (
     set "python_exe=%%i"
 )
 if not defined python_exe (
-    echo Python is not installed.
-    echo Please install Python by visiting the Python installer website. Please install version 3.10 for maximum compatibility.
-    echo Please install Python as admin and make sure it is added to the system PATH. Install pip if it gives you the option.
-    start "" "https://www.python.org/downloads/release/python-31011/"
-    pause
-    exit /b
+ echo Python is not installed. Installing Python 3.10...
+     winget install -e --id Python.Python.3.10
 )
 
 REM Check if pip is installed
@@ -47,18 +52,26 @@ if errorlevel 1 (
     python -m ensurepip --upgrade
 )
 
-REM Check if Chocolatey is installed
-choco --version >nul 2>&1
 
-REM If Chocolatey is not installed, install it
+
+REM Check if Git is installed
+git --version >nul 2>&1
+
+REM If Git is not installed, install it using winget
 if errorlevel 1 (
-    echo Chocolatey is not installed. Installing Chocolatey...
-    @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+    echo Git is not installed. Installing Git...
+     winget install --id Git.Git -e --source winget
 )
 
-REM Install Node.js LTS via Chocolatey
-echo Installing Node.js LTS...
-choco install nodejs-lts --force -y
+REM Check if Node.js LTS is installed
+node --version >nul 2>&1
+
+REM If Node.js LTS is not installed, install it using winget
+if errorlevel 1 (
+    echo Node.js LTS is not installed. Installing Node.js LTS...
+    winget install -e --id OpenJS.NodeJS.LTS
+)
+
 
 REM Check if venv exists
 if not exist venv (
@@ -72,7 +85,7 @@ call venv\Scripts\activate.bat
 REM Install required Python packages
 echo Installing required Python packages...
 python -m pip install --upgrade pip
-python -m pip install flask nltk transformers requests tqdm shutil
+python -m pip install flask nltk transformers requests tqdm
 
 REM Download NLTK resources
 echo Downloading NLTK resources...

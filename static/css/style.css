@@ -159,6 +159,11 @@ h1 {
     color: #ffffff !important;
 }
 
+
+.card hr {
+    border-top: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+
 .form-control {
     background-color: #40444b;
     color: #b5bac1;
@@ -345,4 +350,17 @@ h1 {
 
 .modal-body .form-check-label {
     color: #ffffff;
+}
+
+.modal-body hr {
+    border-top: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+.modal-footer {
+    justify-content: left!important;
+}
+
+.disabled-button {
+  opacity: 0.3!important; /* Adjust the opacity to your desired level */
+  cursor: not-allowed!important;
 }

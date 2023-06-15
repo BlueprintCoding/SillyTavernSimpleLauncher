@@ -50,6 +50,25 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
+console_output = []
+
+def print_to_console(text):
+    console_output.append(text)
+
+@app.route('/console-stream')
+def console_stream():
+    def generate_console_output():
+        last_index = 0
+        while True:
+            if len(console_output) > last_index:
+                for line in console_output[last_index:]:
+                    yield f"data: {line}\n\n"
+                last_index = len(console_output)
+            time.sleep(0.1)  # Add a small delay to avoid excessive CPU usage
+
+    return Response(generate_console_output(), mimetype='text/event-stream')
+
+
 
 def copy_instance_files(source, destination):
     public_folder = os.path.join(source, "public")
@@ -96,7 +115,23 @@ def copy_instance_files(source, destination):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    # Check if SillyTavern MainBranch exists
+    parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
+    sillytavern_main_path = os.path.join(parent_folder, "SillyTavern-MainBranch")
+    sillytavern_main_exists = os.path.exists(sillytavern_main_path)
+
+    # Check if SillyTavern DevBranch exists
+    sillytavern_dev_path = os.path.join(parent_folder, "SillyTavern-DevBranch")
+    sillytavern_dev_exists = os.path.exists(sillytavern_dev_path)
+
+    # Check if SillyTavern Extras exists
+    sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
+    sillytavern_extras_exists = os.path.exists(sillytavern_extras_path)
+
+    return render_template('index.html', sillytavern_main_exists=sillytavern_main_exists,
+                           sillytavern_dev_exists=sillytavern_dev_exists,
+                           sillytavern_extras_exists=sillytavern_extras_exists
+                           )
 
 
 @app.route("/migrate-profile", methods=["GET"])
@@ -304,6 +339,7 @@ def install_main_branch():
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
     sillytavern_path = os.path.join(parent_folder, "SillyTavern-MainBranch")
 
+
     # Check if SillyTavern is already installed
     if os.path.exists(sillytavern_path):
         return "SillyTavern Main is already installed, skipping installation."
@@ -311,22 +347,26 @@ def install_main_branch():
         # Clone SillyTavern repository
         clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "main", sillytavern_path]
         subprocess.Popen(clone_command).wait()
-        return "Silly Tavern Main Branch Cloned Successfully."
+        return jsonify({'message': 'SillyTavern Main Branch installed successfully.'}), 200
 
 
-@app.route("/install-dev-branch", methods=['POST'])
+@app.route("/install-dev-branch", methods=['GET', 'POST'])
 def install_dev_branch():
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
-    sillytavern_path = os.path.join(parent_folder, "SillyTavern-DevBranch")
+    sillytaverndev_path = os.path.join(parent_folder, "SillyTavern-DevBranch")
 
     # Check if SillyTavern is already installed
-    if os.path.exists(sillytavern_path):
+    if os.path.exists(sillytaverndev_path):
         return "SillyTavern Dev is already installed, skipping installation."
     else:
         # Clone SillyTavern repository
-        clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "dev", sillytavern_path]
-        subprocess.Popen(clone_command).wait()
-        return "Silly Tavern Dev Branch Cloned Successfully."
+        clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "dev", sillytaverndev_path]
+        subprocess.run(clone_command)
+
+        return jsonify({'message': 'SillyTavern Dev Branch installed successfully.'}), 200
+
+
+
 
 # Define shared path/directory variables as global
 parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
@@ -340,13 +380,11 @@ def extras_manager():
     if request.method == 'POST':
         selected_modules = request.form.getlist('modules')
         custom_flags = request.form.get('custom_flags')
-
-        # Append custom flags to the selected modules if a value is provided
-        if custom_flags:
-            selected_modules.append(custom_flags)
+        emotions_flag = request.form.getlist('emotions28')
+        listen_flag = request.form.getlist('listen')
 
         launch_extras = True
-        start_extras(launch_extras, selected_modules)
+        start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, custom_flags)
 
         return redirect('/')
     else:
@@ -367,9 +405,9 @@ def install_extras():
 
         if os.path.exists(sillytavern_extras_path):
             logger.info("SillyTavern-extras is already installed. Skipping clone...")
-        else:
-            subprocess.run(
-                ["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
+            return jsonify({'message': 'SillyTavern Extras is already installed.'}), 200
+
+        subprocess.run(["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
 
         venv_path = os.path.join(sillytavern_extras_path, "venv")
 
@@ -382,10 +420,9 @@ def install_extras():
         subprocess.run([os.path.join(venv_path, "Scripts", "python"), "-m", "pip", "install", "--upgrade", "pip"])
 
         requirements_file = os.path.join(sillytavern_extras_path, "requirements-complete.txt")
-        subprocess.run(
-            [os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
+        subprocess.run([os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
 
-        return "SillyTavern-extras Installed..."
+        return "SillyTavern Extras installed successfully."
 
     except Exception as e:
         logger.error(f"Error in install_extras function: {e}")
@@ -394,7 +431,7 @@ def install_extras():
         return jsonify({'error': 'An error occurred during installation.'}), 500
 
 
-def start_extras(launch_extras, selected_modules):
+def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, custom_flags):
     global sillytavern_extras_path, venv_path, stable_diffusion_dir
 
     try:
@@ -403,6 +440,18 @@ def start_extras(launch_extras, selected_modules):
 
         if launch_extras:
             enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
+
+            if emotions_flag:
+                enabled_modules_arg += ",classify"
+                enabled_modules_arg += " --classification-model=joeddav/distilbert-base-uncased-go-emotions-student"
+
+            if listen_flag:
+                enabled_modules_arg += " --listen"
+
+            if custom_flags:
+                enabled_modules_arg += " " + custom_flags
+
+
             activate_venv = os.path.abspath(os.path.join(venv_path, "Scripts", "activate.bat"))
             extras_port = "--port=5100"
             extras_path = os.path.join(sillytavern_extras_path, "server.py")
@@ -430,11 +479,14 @@ def start_extras(launch_extras, selected_modules):
                 wait_for_stable_diffusion()
 
             process = subprocess.Popen(
-                ['start', 'cmd', '/k', f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}'],
+                ['start', 'cmd', '/k',
+                 f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}'],
                 shell=True,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
 
+            print('start', 'cmd', '/k',
+                 f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}')
             # Retrieve the PID of the server process
             server_pid = process.pid
             logger.info("Server launched successfully.")
@@ -748,6 +800,39 @@ def install_stablediffusion():
         if not os.path.exists(stable_diffusion_dir):
             # Clone the git repository into the StableDiffusion folder
             os.system(f"git clone {git_repo} {stable_diffusion_dir}")
+
+        # Edit the webui-user.bat file
+        webui_user_bat_path = os.path.join(stable_diffusion_dir, "webui-user.bat")
+        if os.path.exists(webui_user_bat_path):
+            shutil.copy(webui_user_bat_path, webui_user_bat_path + ".backup")  # Create a backup of the original file
+
+            # Open the webui-user.bat file for editing
+            with open(webui_user_bat_path, 'w') as file:
+                file.write("@echo off\n\n")
+                file.write("set PYTHON=\n")
+                file.write("set GIT=\n")
+                file.write("set VENV_DIR=\n")
+                file.write("set COMMANDLINE_ARGS= --api --xformers\n")
+                file.write("set XFORMERS_PACKAGE=xformers==0.0.17\n\n")
+                file.write("call webui.bat")
+
+        return jsonify({"message": "StableDiffusion and models installed successfully."}), 200
+
+    except Exception as e:
+        print(f"An error occurred during installation: {e}")
+        return jsonify({"error": f"An error occurred during installation: {e}"}), 500
+
+@app.route("/install-sd-models", methods=['POST'])
+def install_sd_models():
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    stable_diffusion_dir = os.path.join(root_dir, "StableDiffusion")
+    models_dir = os.path.join(stable_diffusion_dir, "models", "Stable-diffusion")
+    git_repo = "https://github.com/AUTOMATIC1111/stable-diffusion-webui.git"
+
+    try:
+        # Check if the StableDiffusion folder exists
+        if not os.path.exists(stable_diffusion_dir):
+            return "Please install StableDiffusion First"
 
         # Get the selected models from the request
         selected_models = request.json.get('models', [])
