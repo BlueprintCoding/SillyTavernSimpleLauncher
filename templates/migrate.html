@@ -2,51 +2,26 @@
 <html>
 <head>
     <title>Silly Tavern Profile Migrator</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            padding: 20px;
-        }
-        form {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        label {
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input,
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-        }
-        button[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-    </style>
 </head>
 <body>
-    <h1 class="text-center">Silly Tavern Profile Migrator</h1>
-
-<div id="migrate-form-container">
+<div class="container">
+ <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-header"><h2 class="card-title">Silly Tavern Profile Migrator</h2></div>
+                    <p>This is tool is to migrate an existing SillyTavern install into STSL</p>
   <form id="migrate-form" action="/migrate-instance" method="POST">
         <div class="form-group">
             <label for="source_directory">Previously Installed SillyTavern Folder:</label>
-            <small class="form-text text-muted">Enter the file path of the previously installed SillyTavern folder.</small>
             <input type="text" class="form-control" name="source_directory" id="source_directory" required>
+             <small class="form-text">Enter the file path of the previously installed SillyTavern folder. (ex: C:/Documents/SillyTavern)</small>
         </div>
 
         <div class="form-group">
-            <label for="new_instance_name">Save a new profile:</label>
+            <label for="new_instance_name">New profile name:</label>
             <input type="text" class="form-control" name="new_instance_name" id="new_instance_name" required>
         </div>
 
@@ -57,15 +32,20 @@
                 <option value="dev">Dev Branch</option>
             </select>
         </div>
-
-        <button type="submit" class="btn btn-primary">Save New Profile</button>
+<div class="button-grid">
+    <button type="submit" class="btn btn-primary">Save New Profile</button></div>
   </form>
 </div>
 
-    <!-- Back to Index button -->
-    <div class="text-center mt-3">
-        <a href="/" class="btn btn-secondary">Back to Home</a>
-    </div>
+            </div>
+                <!-- Back to Index button -->
+            <div class="spec-button-grid button-grid" style="padding-top:10px;">
+                <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+            </div>
+
+        </div>
+ </div>
+</div>
 
 
 <script>
@@ -94,6 +74,10 @@
       alert("An error occurred: " + error.message);
     });
   });
+
+      function goToIndex() {
+        window.location.href = '/';
+    }
 </script>
 
 

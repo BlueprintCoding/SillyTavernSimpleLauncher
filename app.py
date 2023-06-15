@@ -50,25 +50,6 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
-console_output = []
-
-def print_to_console(text):
-    console_output.append(text)
-
-@app.route('/console-stream')
-def console_stream():
-    def generate_console_output():
-        last_index = 0
-        while True:
-            if len(console_output) > last_index:
-                for line in console_output[last_index:]:
-                    yield f"data: {line}\n\n"
-                last_index = len(console_output)
-            time.sleep(0.1)  # Add a small delay to avoid excessive CPU usage
-
-    return Response(generate_console_output(), mimetype='text/event-stream')
-
-
 
 def copy_instance_files(source, destination):
     public_folder = os.path.join(source, "public")
@@ -161,7 +142,7 @@ def migrate_instance():
 
     try:
         os.makedirs(new_instance_folder)  # Create the new instance folder
-        copy_instance_files(source_directory, new_instance_folder)
+        migrate_instance_files(source_directory, new_instance_folder)
         logging.info(f"New profile created: {new_instance_name}-{branch_choice_var}")
 
         # Return a JSON response indicating success
@@ -173,6 +154,40 @@ def migrate_instance():
 
         # Return a JSON response indicating error
         return jsonify({"success": False, "message": f"Error creating the new profile: {str(e)}"})
+
+
+def migrate_instance_files(source_directory, destination_directory):
+    # Files and folders to copy, located inside the "public" folder of the source_directory
+    dirs_to_copy = [
+        "Backgrounds", "Characters", "Chats", "Group chats", "Groups",
+        "KoboldAI Settings", "NovelAI Settings", "OpenAI Settings",
+        "TextGen Settings", "Themes", "User Avatars", "Worlds"
+    ]
+    files_to_copy = ["settings.json"]
+
+    source_public_directory = os.path.join(source_directory, "public")
+
+    # Copy directories
+    for directory in dirs_to_copy:
+        source_dir = os.path.join(source_public_directory, directory)
+        if os.path.isdir(source_dir):
+            destination_dir = os.path.join(destination_directory, directory)
+            os.makedirs(destination_dir)  # Create the destination directory
+            print(f"Copying directory: {source_dir} -> {destination_dir}")
+            for file_name in os.listdir(source_dir):
+                source_file = os.path.join(source_dir, file_name)
+                destination_file = os.path.join(destination_dir, file_name)
+                if os.path.isfile(source_file):
+                    shutil.copy2(source_file, destination_file)
+                    print(f"Copied file: {source_file} -> {destination_file}")
+
+    # Copy files
+    for file in files_to_copy:
+        source_file = os.path.join(source_public_directory, file)
+        if os.path.isfile(source_file):
+            destination_file = os.path.join(destination_directory, file)
+            shutil.copy2(source_file, destination_file)
+            print(f"Copied file: {source_file} -> {destination_file}")
 
 
 @app.route('/optimize-prompt')
