@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SillyTavern Simple Launcher</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main_script.js') }}"></script>
+
+</head>
+<body>
+<div class="container">
+    <div class="title"><h1>SillyTavern Simple Launcher</h1></div>
+    <!-- Add alert container -->
+    {% if alert_message %}
+        <div class="alert">
+            <script>
+                Swal.fire({
+                    icon: 'info',
+                    title: 'SillyTavern Extras Required',
+                    text: '{{ alert_message }}',
+                    confirmButtonText: 'OK'
+                });
+            </script>
+        </div>
+    {% endif %}
+    <div class="tabs">
+        <div class="tab active" onclick="showContent('launch')">Launch</div>
+        <div class="tab" onclick="showContent('tools')">Tools</div>
+        <div class="tab" onclick="showContent('support')">Support</div>
+    </div>
+    <div class="loading-container" id="loadingContainer" style="display: none;">
+        <div class="loading-spinner"></div>
+        <br>
+        <div class="">Installing Please Wait...</div>
+    </div>
+
+    <div class="content active" id="launch">
+        <div class="sub-title"><h2>Launch</h2></div>
+        <div class="button-grid">
+            <button onclick="launchMain()">Launch ST Main</button>
+            <button onclick="launchDev()">Launch ST Dev</button>
+            <button onclick="launchExtras()">Launch ST Extras</button>
+            <button onclick="closeSillyTavern()">Close SillyTavern</button>
+            <button onclick="editConfig()">Edit ST Config/Settings</button>
+            <button onclick="launchProfileManager()">Change ST Profile</button>
+
+        </div>
+        <div class="sub-title"><h2>Install</h2></div>
+        <div class="button-grid">
+<button onclick="install('mainBranch')">Install Main Branch</button>
+            <button onclick="install('devBranch')">Install Dev Preview Branch</button>
+            <button onclick="disableButtons(); install('extras')">Install Extras</button>
+
+        </div>
+        <div class="sub-title"><h2>Update</h2></div>
+        <div class="button-grid">
+            <button onclick="executeScript('Update SillyTavern', 'main')">Update Main Branch</button>
+            <button onclick="executeScript('Update SillyTavern', 'dev')">Update Dev Preview Branch</button>
+            <button onclick="executeScript('Update' +
+             '' +
+              ' SillyTavern', 'extras')">Update Extras</button></div>
+    </div>
+
+    <div class="content" id="tools">
+        <div class="sub-title"><h2>Tools</h2></div>
+        <div class="button-grid">
+            <button onclick="migrateProfile()">Migrate Existing ST Install as Profile</button>
+            <button onclick="backupST()">Backup SillyTavern Files</button>
+            <button onclick="openOptimizePrompt()">OptimizePrompt GUI</button>
+        </div>
+    </div>
+
+
+    <div class="content" id="support">
+        <div class="sub-title"><h2>Support</h2></div>
+        <div class="spec-button-grid button-grid" style="margin:0 auto; text-align: center;">
+            <button style="font-size: 20px!important;" onclick="openURL('https://docs.sillytavern.app/')">SillyTavern
+                Documentation (READ IT, READ IT, READ IT)
+            </button>
+        </div>
+        <br>
+        <div class="button-grid">
+            <button onclick="openURL('https://github.com/SillyTavern/SillyTavern')">SillyTavern GitHub</button>
+            <button onclick="openURL('https://github.com/blueprintCoding/sillyTavernSimpleLauncher')">SillyTavern Simple
+                Launcher GitHub
+            </button>
+            <button onclick="openURL('https://sillytavernai.com')">SillyTavernAI.com</button>
+            <button onclick="openURL('https://discord.gg/RZdyAEUPvj')">Discord</button>
+            <button onclick="openURL('https://reddit.com/r/sillyTavernAI/')">Reddit</button>
+            <button onclick="openURL('https://www.google.com/search?q=How+do+I+do+XXXXX+in+SillyTavern')">Google
+            </button>
+        </div>
+        <br>
+        <div class="sub-title"><h2>Support the development of STSL</h2></div>
+        <div class="spec-button-grid button-grid" style="margin:0 auto; text-align: center;">
+            <label>In my spare time, alongside my regular 9-5 job and my 3D printing shop, I work on STSL. If you'd like
+                to show your support directly, you can become a subscriber on Patreon. My main aim with STSL is to make
+                it super user-friendly for people who aren't tech-savvy, allowing them to easily install and utilize
+                SillyTavern and Extras. I'm also working on including a bunch of extra features for those who are more
+                experienced, such as profile management.</label>
+            <button style="font-size: 20px!important;margin-top: 10px;"
+                    onclick="openURL('https://patreon.com/SillyTavernSimpleLauncher?utm_medium=button_clcik&utm_source=STSLAPP&utm_campaign=STSLAPP&utm_content=join_link')">
+                Support on Patreon
+            </button>
+        </div>
+    </div>
+</div>
+<pre id="console-output"></pre>
+  <script>
+        // Function to append text to the console output
+        function writeToConsole(text) {
+            var consoleOutput = document.getElementById("console-output");
+            consoleOutput.innerHTML += text + "<br>";
+        }
+
+        // Event listener to capture standard output messages
+        if (!!window.EventSource) {
+            var source = new EventSource("/console-stream");
+            source.addEventListener("message", function (event) {
+                writeToConsole(event.data);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Optimize Prompt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="title">
+        <h1>Optimize Prompt</h1>
+    </div>
+    <div class="content active">
+        <div class="input-area">
+            <textarea id="input-text" placeholder="Enter your text here"></textarea>
+        </div>
+        <div class="button-area button-grid">
+            <button id="stem-button" onclick="stemPrompt()">STEM Prompt</button>
+            {#                <button id="summarize-button" onclick="summarizePrompt()">Summarize Prompt</button>#}
+            <button id="copy-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+        {#            <div class="slider-container">#}
+        {#                <label for="token-slider">Token Amount: </label>#}
+        {#                <input type="range" id="token-slider" min="100" max="4096" step="1" value="150">#}
+        {#                <span id="token-value">150</span>#}
+        {#            </div>#}
+        <div class="output-area">
+            <textarea id="output-text" placeholder="Optimized text will appear here" readonly></textarea>
+        </div>
+        {#            <div class="summary-info">#}
+        {#    <p>Original Token Length: <span id="original-token-length"></span></p>#}
+        {#    <p>Reduction Amount: <span id="reduction-amount"></span></p>#}
+        {#    <p>New Token Length: <span id="new-token-length"></span></p>#}
+    </div>
+    <div class="spec-button-grid button-grid" style="padding-top:10px;">
+        <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+    </div>
+
+</div>
+</div>
+
+<script>
+    function stemPrompt() {
+        const inputText = document.getElementById('input-text').value;
+        fetch('/stem-text', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                input_text: inputText
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if ('stemmed_text' in data) {
+                    const outputText = data.stemmed_text;
+                    document.getElementById('output-text').value = outputText;
+                } else if ('error' in data) {
+                    console.error('Error:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    {#function summarizePrompt() {
+        const inputText = document.getElementById('input-text').value;
+        const tokenAmount = document.getElementById('token-slider').value;
+
+        Swal.fire({
+            title: 'Summarizing your text...',
+            text: 'This could take a minute depending on the size of your text',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+                fetch('/summarize-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        input_text: inputText,
+                        token_amount: tokenAmount
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    Swal.close();
+                    const summaryText = data.summary;
+                    const originalTokenLength = data.original_token_length;
+                    const reductionAmount = data.reduction_amount;
+                    const newTokenLength = data.new_token_length;
+                    document.getElementById('output-text').value = summaryText;
+                    document.getElementById('original-token-length').textContent = originalTokenLength;
+                    document.getElementById('reduction-amount').textContent = reductionAmount;
+                    document.getElementById('new-token-length').textContent = newTokenLength;
+                })
+                .catch(error => {
+                    Swal.close();
+                    console.error('Error:', error);
+                });
+            }
+        });
+    }#}
+
+
+    function copyToClipboard() {
+        const outputText = document.getElementById('output-text').value;
+        navigator.clipboard.writeText(outputText)
+            .then(() => {
+                Swal.fire('Output Copied', 'Output copied to clipboard successfully', 'success');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Failed to copy output to clipboard', 'error');
+            });
+    }
+
+    // Update the token value display when the slider value changes
+    const tokenSlider = document.getElementById('token-slider');
+    const tokenValue = document.getElementById('token-value');
+    tokenSlider.addEventListener('input', () => {
+        tokenValue.textContent = tokenSlider.value;
+    });
+
+
+    function goToIndex() {
+        window.location.href = '/';
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Silly Tavern Extras Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+</head>
+</head>
+<body>
+    <div id="alert-container" style="position:relative; z-index: 9999;">
+        <div class="alert alert-dismissible fade show d-none" id="status-message" role="alert">
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+<div class="container">
+
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-header"><h2 class="card-title">Extras Manager</h2></div>
+                    <h3>Select modules to load</h3>
+                    <form method="post" action="/extras-manager">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="caption" id="caption">
+                            <label class="form-check-label" for="caption">Caption</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="summarize"
+                                   id="summarize">
+                            <label class="form-check-label" for="summarize">Summarize</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="classify"
+                                   id="classify">
+                            <label class="form-check-label" for="classify">Classify (6 emotions)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="emotions28" value="emotions28"
+                                   id="emotions28">
+                            <label class="form-check-label" for="emotions28">Classify (28 emotions)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="sd" id="sd">
+                            <label class="form-check-label" for="sd">StableDiffusion</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="silero-tts"
+                                   id="silero-tts">
+                            <label class="form-check-label" for="silero-tts">Silero TTS</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="edge-tts"
+                                   id="edge-tts">
+                            <label class="form-check-label" for="edge-tts">Edge TTS</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="modules" value="chromadb"
+                                   id="chromadb">
+                            <label class="form-check-label" for="chromadb">ChromaDB</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="listen" value="listen"
+                                   id="listen">
+                            <label class="form-check-label" for="listen">Enable Listen (share extras on your local network so you can access remotely)</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="custom-flags">Custom Flags/Parameters</label>
+                            <input class="form-control" type="text" name="custom_flags" id="custom-flags"
+                                   placeholder="Enter custom flags/parameters">
+                            <!--<label>For example, to load 28 emotions:
+                                "--classification-model=joeddav/distilbert-base-uncased-go-emotions-student" See all <a
+                                        target="_blank"
+                                        href="https://github.com/SillyTavern/SillyTavern-extras#additional-options">flags
+                                    here</a></label>-->
+                        </div>
+                        <br>
+                        <div class="button-grid">
+                            <button class="btn btn-primary" type="submit">Start Extras</button>
+                            {#                                <button class="btn btn-primary" onclick="closeExtras()">Close Extras</button>#}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <card>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h3>Install StableDiffusion (BETA)</h3></div>
+                        <label>If you are running StableDiffusion for the first time, extras will take around 2-5
+                            minutes to launch as SD must download around 10GB in dependencies and the base SD 1.5
+                            model.</label>
+                        <div class="button-grid">
+                            <button class="btn btn-primary" onclick="showInstallModal()">Install StableDiffusion &
+                                Models
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </card>
+            <div class="spec-button-grid button-grid" style="padding-top:10px;">
+                <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- StableDiffusion Install Modal -->
+<div class="modal fade" id="installModal" tabindex="-1" role="dialog" aria-labelledby="installModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="showInstallModal">Install StableDiffusion</h5>
+                <button type="button" class="close" onclick="CloseModal()" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>StableDiffusion installs SD 1.5 by default</span>
+                <div class="button-grid" style="margin-top: 10px;"> <button type="button" class="btn btn-primary" onclick="installStableDiffusion()" data-dismiss="modal">Install StableDiffusion</button></div>
+                <hr>
+            <span>You can choose some additional models to download.<br> Be PATIENT these models are big and will take time to download.</span>
+                <h6>Select models to download:</h6>
+                <!--<div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model1" id="model1">
+                    <label class="form-check-label" for="model1"><b>Stable Diffusion 1.5</b> - (7.5GB) - (base SD model)</label>
+                </div>-->
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model2" id="model2">
+                    <label class="form-check-label" for="model2"><b>Deliberate</b> - (1.99GB) - (Realistic model, based
+                        on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model3" id="model3">
+                    <label class="form-check-label" for="model3"><b>ChilloutMix</b> - (3.97GB) - (Realistic model, based
+                        on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model4" id="model4">
+                    <label class="form-check-label" for="model4"><b>majicMIX realistic</b> - (2.24GB) - (Realistic
+                        model, based on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model5" id="model5">
+                    <label class="form-check-label" for="model5"><b>DreamShaper</b> - (5.55GB) - (Realistic model, based
+                        on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model6" id="model7">
+                    <label class="form-check-label" for="model6"><b>Realistic Vision</b> - (3.59GB) - (Realistic model,
+                        based on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model7" id="model7">
+                    <label class="form-check-label" for="model7"><b>Protogen</b> - (3.97GB) - (Anime model, based on SD
+                        1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model8" id="model8">
+                    <label class="form-check-label" for="model8"><b>CoffeeNSFW</b> - (1.99GB) - (Anime/Hentai model,
+                        based on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model9" id="model9">
+                    <label class="form-check-label" for="model9"><b>AbyssOrangeMix3</b> - (2.13GB) - (Anime model, based
+                        on SD 1.5)</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="models" value="model10" id="model10">
+                    <label class="form-check-label" for="model10"><b>Corneo's 7th Heaven Mix</b> - (7.17GB) -
+                        (Anime/Hentai model, based on SD 1.5)</label>
+                </div>
+                <!-- ...add checkboxes for other models... -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="installSDModels()" data-dismiss="modal">Install Models</button>
+                <button type="button" class="btn btn-secondary" onclick="CloseModal()" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js"></script>
+<script>
+    function showAlert(message, type) {
+        const alertElement = document.getElementById('status-message');
+        alertElement.textContent = message;
+        alertElement.classList.remove('d-none');
+        alertElement.classList.add(`alert-${type}`);
+        setTimeout(() => {
+            hideAlert();
+        }, 10000);
+    }
+
+    function hideAlert() {
+        const alertElement = document.getElementById('status-message');
+        alertElement.classList.add('d-none');
+        alertElement.classList.remove('alert-success', 'alert-danger');
+    }
+
+    const alertContainer = document.getElementById('alert-container');
+    const alertMessage = document.getElementById('status-message');
+
+    alertMessage.addEventListener('click', function () {
+        hideAlert();
+    });
+
+    const classifyCheckbox = document.getElementById('classify');
+const emotions28Checkbox = document.getElementById('emotions28');
+
+classifyCheckbox.addEventListener('change', function() {
+  if (this.checked) {
+    emotions28Checkbox.checked = false;
+  }
+});
+
+emotions28Checkbox.addEventListener('change', function() {
+  if (this.checked) {
+    classifyCheckbox.checked = false;
+  }
+});
+
+
+    function showInstallModal() {
+        $('#installModal').modal('show');
+    }
+
+        function CloseModal() {
+        $('#installModal').modal('hide');
+    }
+
+
+    function installStableDiffusion() {
+        // Make API request to install StableDiffusion with selected models
+        fetch('/install-stablediffusion', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify("installing SD")
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                    $('#installModal').modal('hide');
+                } else {
+                    showAlert(data.message, 'success');
+                    $('#installModal').modal('hide');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred during installation.', 'danger');
+                console.error(error);
+                $('#installModal').modal('hide');
+            });
+    }
+
+    function installSDModels() {
+        // Get selected models
+        var selectedModels = [];
+        $('input[name="models"]:checked').each(function () {
+            selectedModels.push($(this).val());
+        });
+
+        if (selectedModels.length === 0) {
+        showAlert('Please select at least one model.', 'warning');
+         return;
+         }
+
+        // Make API request to install StableDiffusion with selected models
+        fetch('/install-sd-models', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({models: selectedModels})
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showAlert(data.error, 'danger');
+                    $('#installModal').modal('hide');
+                } else {
+                    showAlert(data.message, 'success');
+                    $('#installModal').modal('hide');
+                }
+            })
+            .catch(error => {
+                showAlert('An error occurred during installation.', 'danger');
+                console.error(error);
+                $('#installModal').modal('hide');
+            });
+    }
+
+
+    function goToIndex() {
+        window.location.href = '/';
+    }
+
+</script>
+</body>
+</html>

@@ -5,12 +5,18 @@ Optimization/venv
 #ignore install path files.
 InstallPaths.txt
 
-#Ignore old files
-old/
-/Launch Scripts/.old
-
 #Ignore Log files
 user-agreement.txt
 *.log
 GUI-Launch-Errors.txt
 STSL-Settings/flags.json
+
+.chroma_db
+.chroma_db/
+
+tmp/
+tmp
+
+dev/
+
+StableDiffusion/
