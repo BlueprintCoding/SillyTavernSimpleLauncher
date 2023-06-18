@@ -8,6 +8,19 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js"></script>
     <script src="{{ url_for('static', filename='js/main_script.js') }}"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GB3BP9FMVW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-GB3BP9FMVW');
+</script>
+
 
 </head>
 <body>
@@ -40,29 +53,29 @@
     <div class="content active" id="launch">
         <div class="sub-title"><h2>Launch</h2></div>
         <div class="button-grid">
-            <button onclick="launchMain()">Launch ST Main</button>
-            <button onclick="launchDev()">Launch ST Dev</button>
-            <button onclick="launchExtras()">Launch ST Extras</button>
-            <button onclick="closeSillyTavern()">Close SillyTavern</button>
-            <button onclick="editConfig()">Edit ST Config/Settings</button>
-            <button onclick="launchProfileManager()">Change ST Profile</button>
-
-        </div>
-        <div class="sub-title"><h2>Install</h2></div>
+  <button id="launchMainBtn" onclick="launchMain()" {% if not repos_cloned.main %}disabled{% endif %}>Launch ST Main</button>
+    <button id="launchDevBtn" onclick="launchDev()" {% if not repos_cloned.dev %}disabled{% endif %}>Launch ST Dev</button>
+    <button id="launchExtrasBtn" onclick="launchExtras()" {% if not repos_cloned.extras %}disabled{% endif %}>Launch ST Extras</button>
+    <button onclick="closeSillyTavern()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Close SillyTavern</button>
+    <button onclick="editConfig()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Edit ST Config/Settings</button>
+    <button onclick="launchProfileManager()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Change ST Profile</button>
+</div>
+            <div class="sub-title"><h2>Install</h2></div>
         <div class="button-grid">
-<button onclick="install('mainBranch')">Install Main Branch</button>
-            <button onclick="install('devBranch')">Install Dev Preview Branch</button>
-            <button onclick="disableButtons(); install('extras')">Install Extras</button>
-
+<button id="installMainBtn" onclick="install('mainBranch')" {% if repos_cloned.main %}disabled{% endif %}>Install Main Branch</button>
+<button id="installDevBtn" onclick="install('devBranch')" {% if repos_cloned.dev %}disabled{% endif %}>Install Dev Preview Branch</button>
+<button id="installExtrasBtn" onclick="disableButtons(); install('extras')" {% if repos_cloned.extras %}disabled{% endif %}>Install Extras</button>
         </div>
         <div class="sub-title"><h2>Update</h2></div>
         <div class="button-grid">
-            <button onclick="executeScript('Update SillyTavern', 'main')">Update Main Branch</button>
-            <button onclick="executeScript('Update SillyTavern', 'dev')">Update Dev Preview Branch</button>
-            <button onclick="executeScript('Update' +
-             '' +
-              ' SillyTavern', 'extras')">Update Extras</button></div>
+<button id="updateMainBtn" onclick="executeScript('Update SillyTavern', 'main')" {% if not repos_cloned.main %}disabled{% endif %}>Update Main Branch</button>
+<button id="updateDevBtn" onclick="executeScript('Update SillyTavern', 'dev')" {% if not repos_cloned.dev %}disabled{% endif %}>Update Dev Preview Branch</button>
+<button id="updateExtrasBtn" onclick="executeScript('Update SillyTavern', 'extras')" {% if not repos_cloned.extras %}disabled{% endif %}>Update Extras</button>
+
     </div>
+    </div>
+
+
 
     <div class="content" id="tools">
         <div class="sub-title"><h2>Tools</h2></div>
@@ -107,8 +120,25 @@
             </button>
         </div>
     </div>
+<div class="installed-modules">
+   <div class="row">
+  <div class="col-md-4">
+    <p>Main Branch Installed?: <span id="mainStatus">{{ repos_cloned.main }}</span></p>
+  </div>
+  <div class="col-md-4">
+    <p>Dev Preview Branch Installed?: <span id="devStatus">{{ repos_cloned.dev }}</span></p>
+  </div>
+  <div class="col-md-4">
+    <p>Extras Installed?: <span id="extrasStatus">{{ repos_cloned.extras }}</span></p>
+  </div>
 </div>
-<pre id="console-output"></pre>
+
+</div>
+
+</div>
+
+
+<!--<pre id="console-output"></pre>
   <script>
         // Function to append text to the console output
         function writeToConsole(text) {
@@ -123,6 +153,6 @@
                 writeToConsole(event.data);
             });
         }
-    </script>
+    </script>-->
 </body>
 </html>
