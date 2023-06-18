@@ -360,7 +360,15 @@ h1 {
     justify-content: left!important;
 }
 
-.disabled-button {
+button:disabled,
+button[disabled]{
   opacity: 0.3!important; /* Adjust the opacity to your desired level */
   cursor: not-allowed!important;
+
 }
+
+button:disabled:hover,
+button[disabled]:hover {
+    background-color: #DF9712;
+}
+

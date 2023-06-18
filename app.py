@@ -49,6 +49,27 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
+# def get_external_ip():
+#     response = requests.get('https://api.ipify.org?format=json')
+#     data = response.json()
+#     ip_address = data['ip']
+#     return ip_address
+
+
+def check_repos_cloned():
+    parent_folder = os.path.abspath(os.path.join(app.root_path, ".."))
+    sillytavern_main_path = os.path.join(parent_folder, "SillyTavern-MainBranch")
+    sillytavern_dev_path = os.path.join(parent_folder, "SillyTavern-DevBranch")
+    sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
+
+    repos_cloned = {
+        'main': os.path.exists(sillytavern_main_path),
+        'dev': os.path.exists(sillytavern_dev_path),
+        'extras': os.path.exists(sillytavern_extras_path),
+    }
+
+    return repos_cloned
+
 
 def copy_instance_files(source, destination):
     public_folder = os.path.join(source, "public")
@@ -95,6 +116,23 @@ def copy_instance_files(source, destination):
 
 @app.route("/")
 def index():
+    # # Get the external IP address
+    # external_ip = get_external_ip()
+    #
+    # # Use the IP address as the unique identifier
+    # unique_id = external_ip
+    #
+    # # Construct the URL with the unique identifier as a query parameter
+    # url = f'https://sillytavernai.com/track-usage?uid={unique_id}'
+    #
+    # # Send a GET request to the URL
+    # response = requests.get(url)
+    #
+    # # Process the response if needed
+    # # ...
+    #
+    #
+
     # Check if SillyTavern MainBranch exists
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
     sillytavern_main_path = os.path.join(parent_folder, "SillyTavern-MainBranch")
@@ -108,10 +146,11 @@ def index():
     sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
     sillytavern_extras_exists = os.path.exists(sillytavern_extras_path)
 
-    return render_template('index.html', sillytavern_main_exists=sillytavern_main_exists,
-                           sillytavern_dev_exists=sillytavern_dev_exists,
-                           sillytavern_extras_exists=sillytavern_extras_exists
-                           )
+    # Check if repositories are cloned
+    repos_cloned = check_repos_cloned()
+
+
+    return render_template('index.html', repos_cloned=repos_cloned)
 
 
 @app.route("/migrate-profile", methods=["GET"])
@@ -200,7 +239,11 @@ def launch_main():
     start_script_dir = os.path.abspath(os.path.join(home_folder, "..", branch_name))
     start_script_path = os.path.join(start_script_dir, "Start.bat")
     subprocess.Popen(start_script_path, shell=True)
-    return "Launching ST Main..."
+    app_dir = os.path.dirname(os.path.abspath(__file__))
+    # Get the port values from the config files
+    config_file_path_main = os.path.join(app_dir, '..', 'SillyTavern-MainBranch', 'config.conf')
+    port_main = parse_config_file(config_file_path_main).get('port')
+    return jsonify(message="Launching ST Main...", port=port_main)
 
 
 @app.route("/launch-dev", methods=['POST'])
@@ -209,7 +252,11 @@ def launch_dev():
     start_script_dir = os.path.abspath(os.path.join(home_folder, "..", branch_name))
     start_script_path = os.path.join(start_script_dir, "Start.bat")
     subprocess.Popen(start_script_path, shell=True)
-    return "Launching ST Dev..."
+    app_dir = os.path.dirname(os.path.abspath(__file__))
+    # Get the port values from the config files
+    config_file_path_dev = os.path.join(app_dir, '..', 'SillyTavern-DevBranch', 'config.conf')
+    port_dev = parse_config_file(config_file_path_dev).get('port')
+    return jsonify(message="Launching ST Dev...", port=port_dev)
 
 
 # List of available modules
@@ -222,22 +269,6 @@ modules = [
     "edge-tts",
     "chromadb"
 ]
-
-
-# @app.route('/configuration', methods=['GET', 'POST'])
-# def configuration():
-#     # Read the config.conf file based on the selected branch
-#     app_dir = os.path.dirname(os.path.abspath(__file__))
-#     config_file_path_main = os.path.join(app_dir, '..', 'SillyTavern-MainBranch', 'config.conf')
-#     config_file_path_dev = os.path.join(app_dir, '..', 'SillyTavern-DevBranch', 'config.conf')
-#
-#     # Parse the config.conf files and extract the default values
-#     default_values_main = parse_config_file(config_file_path_main)
-#     default_values_dev = parse_config_file(config_file_path_dev)
-#
-#     # Pass the default values to the HTML template
-#     return render_template('edit_config.html', default_values=default_values_main,
-#                            default_values_dev=default_values_dev)
 
 @app.route('/configuration', methods=['GET', 'POST'])
 def configuration():
@@ -401,7 +432,7 @@ def install_main_branch():
         # Clone SillyTavern repository
         clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "main", sillytavern_path]
         subprocess.Popen(clone_command).wait()
-        return jsonify({'message': 'SillyTavern Main Branch installed successfully.'}), 200
+        return 'SillyTavern Main Branch installed successfully.'
 
 
 @app.route("/install-dev-branch", methods=['GET', 'POST'])
@@ -418,7 +449,7 @@ def install_dev_branch():
                          sillytaverndev_path]
         subprocess.run(clone_command)
 
-        return jsonify({'message': 'SillyTavern Dev Branch installed successfully.'}), 200
+        return 'SillyTavern Dev Branch installed successfully.'
 
 
 # Define shared path/directory variables as global
@@ -455,11 +486,11 @@ def install_extras():
 
     try:
         if not sillytavern_extras_path or not venv_path:
-            return jsonify({'error': 'SillyTavern Extras path not found.'}), 500
+            return 'Error: SillyTavern Extras path not found.'
 
         if os.path.exists(sillytavern_extras_path):
             logger.info("SillyTavern-extras is already installed. Skipping clone...")
-            return jsonify({'message': 'SillyTavern Extras is already installed.'}), 200
+            return 'SillyTavern Extras is already installed.'
 
         subprocess.run(["git", "clone", "https://github.com/SillyTavern/SillyTavern-extras", sillytavern_extras_path])
 
@@ -483,7 +514,7 @@ def install_extras():
         logger.error(f"Error in install_extras function: {e}")
         logger.exception("An error occurred during installation.")
 
-        return jsonify({'error': 'An error occurred during installation.'}), 500
+        return 'An error occurred during Extras installation.'
 
 
 def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, custom_flags):
@@ -491,7 +522,7 @@ def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, cu
 
     try:
         if not sillytavern_extras_path or not venv_path:
-            return jsonify({'error': 'SillyTavern Extras path not found.'}), 500
+            return 'Error: SillyTavern Extras path not found.'
 
         if launch_extras:
             enabled_modules_arg = "--enable-modules=" + ",".join(selected_modules)
@@ -555,7 +586,7 @@ def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, cu
         logger.error(f"Error in install_extras function: {e}")
         logger.exception("An error occurred during installation.")
 
-        return jsonify({'error': 'An error occurred during installation.'}), 500
+        return 'Error: An error occurred during installation.'
 
 
 def wait_for_stable_diffusion():
