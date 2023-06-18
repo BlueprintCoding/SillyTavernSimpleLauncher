@@ -8,212 +8,302 @@
         body {
             padding: 20px;
         }
-		.form-container {
+
+        .form-container {
             max-width: 1200px;
             margin: 0 auto;
         }
 
-		label {
-		font-weight: bold;
-		}
+        label {
+            font-weight: bold;
+        }
     </style>
     <!-- Add your JavaScript code here -->
-<script>
-console.log("Default Values:", {{ default_values|tojson }});
-console.log("Default Dev Values:", {{ default_values_dev|tojson }});
+    <script>
+        console.log("Default Main Values:", {{ default_values_main|tojson }});
+        console.log("Default Dev Values:", {{ default_values_dev|tojson }});
+
+
 
 function loadDefaults() {
     var branch = document.getElementById("branch").value;
     if (branch === "Main Branch") {
-        document.getElementById("port").value = "{{ default_values.port }}";
-        document.getElementById("disableThumbnails").checked = "{{ default_values.disableThumbnails }}" === "true";
-        document.getElementById("autorun").checked = "{{ default_values.autorun }}" === "true";
-        document.getElementById("enableExtensions").checked = "{{ default_values.enableExtensions }}" === "true";
-        document.getElementById("whitelist").value = JSON.parse('{{ default_values.whitelist|tojson }}');
-        document.getElementById("whitelistMode").checked = "{{ default_values.whitelistMode }}" === "true";
-        document.getElementById("basicAuthMode").checked = "{{ default_values.basicAuthMode }}" === "true";
-        document.getElementById("basicAuthUsername").value = "{{ default_values.basicAuthUser.username }}";
-        document.getElementById("basicAuthPassword").value = "{{ default_values.basicAuthUser.password }}";
-        document.getElementById("listen").checked = "{{ default_values.listen }}" === "true";
-        document.getElementById("allowKeysExposure").checked = "{{ default_values.allowKeysExposure }}" === "true";
-        document.getElementById("securityOverride").checked = "{{ default_values.securityOverride }}" === "true";
+        {% if default_values_main %}
+        var mainValues = {{ default_values_main|tojson }};
+        if (Object.keys(mainValues).length !== 0) {
+            document.getElementById("port").value = "{{ default_values_main.port }}";
+            document.getElementById("disableThumbnails").checked = "{{ default_values_main.disableThumbnails }}" === "true";
+            document.getElementById("autorun").checked = "{{ default_values_main.autorun }}" === "true";
+            document.getElementById("enableExtensions").checked = "{{ default_values_main.enableExtensions }}" === "true";
+            document.getElementById("whitelist").value = JSON.parse('{{ default_values_main.whitelist|tojson }}');
+            document.getElementById("whitelistMode").checked = "{{ default_values_main.whitelistMode }}" === "true";
+            document.getElementById("basicAuthMode").checked = "{{ default_values_main.basicAuthMode }}" === "true";
+            document.getElementById("basicAuthUsername").value = "{{ default_values_main.basicAuthUser.username }}";
+            document.getElementById("basicAuthPassword").value = "{{ default_values_main.basicAuthUser.password }}";
+            document.getElementById("listen").checked = "{{ default_values_main.listen }}" === "true";
+            document.getElementById("allowKeysExposure").checked = "{{ default_values_main.allowKeysExposure }}" === "true";
+            document.getElementById("securityOverride").checked = "{{ default_values_main.securityOverride }}" === "true";
+        }
+        {% endif %}
     } else if (branch === "Dev Branch") {
-        document.getElementById("port").value = "{{ default_values_dev.port }}";
-        document.getElementById("disableThumbnails").checked = "{{ default_values_dev.disableThumbnails }}" === "true";
-        document.getElementById("autorun").checked = "{{ default_values_dev.autorun }}" === "true";
-        document.getElementById("enableExtensions").checked = "{{ default_values_dev.enableExtensions }}" === "true";
-        document.getElementById("whitelist").value = JSON.parse('{{ default_values_dev.whitelist|tojson }}');
-        document.getElementById("whitelistMode").checked = "{{ default_values_dev.whitelistMode }}" === "true";
-        document.getElementById("basicAuthMode").checked = "{{ default_values_dev.basicAuthMode }}" === "true";
-        document.getElementById("basicAuthUsername").value = "{{ default_values_dev.basicAuthUser.username }}";
-        document.getElementById("basicAuthPassword").value = "{{ default_values_dev.basicAuthUser.password }}";
-        document.getElementById("listen").checked = "{{ default_values_dev.listen }}" === "true";
-        document.getElementById("allowKeysExposure").checked = "{{ default_values_dev.allowKeysExposure }}" === "true";
-        document.getElementById("securityOverride").checked = "{{ default_values_dev.securityOverride }}" === "true";
+        {% if default_values_dev %}
+        var devValues = {{ default_values_dev|tojson }};
+        if (Object.keys(devValues).length !== 0) {
+            document.getElementById("port").value = "{{ default_values_dev.port }}";
+            document.getElementById("disableThumbnails").checked = "{{ default_values_dev.disableThumbnails }}" === "true";
+            document.getElementById("autorun").checked = "{{ default_values_dev.autorun }}" === "true";
+            document.getElementById("enableExtensions").checked = "{{ default_values_dev.enableExtensions }}" === "true";
+            document.getElementById("whitelist").value = JSON.parse('{{ default_values_dev.whitelist|tojson }}');
+            document.getElementById("whitelistMode").checked = "{{ default_values_dev.whitelistMode }}" === "true";
+            document.getElementById("basicAuthMode").checked = "{{ default_values_dev.basicAuthMode }}" === "true";
+            document.getElementById("basicAuthUsername").value = "{{ default_values_dev.basicAuthUser.username }}";
+            document.getElementById("basicAuthPassword").value = "{{ default_values_dev.basicAuthUser.password }}";
+            document.getElementById("listen").checked = "{{ default_values_dev.listen }}" === "true";
+            document.getElementById("allowKeysExposure").checked = "{{ default_values_dev.allowKeysExposure }}" === "true";
+            document.getElementById("securityOverride").checked = "{{ default_values_dev.securityOverride }}" === "true";
+        } else {
+            console.log("SillyTavern Not installed");
+        }
+        {% endif %}
     }
 }
 
-{% if alert_message %}
-<script>
-    alert("{{ alert_message }}");
-{% endif %}
-    // Call loadDefaults on window load
-    window.onload = loadDefaults;
-</script>
+        {% if alert_message %}
+            alert("{{ alert_message }}");
+        {% endif %}
+        // Call loadDefaults on window load
+        function CheckBranches() {
+        var dev_none;
+        if (Object.keys({{ default_values_dev|tojson }}).length === 0) {
+            dev_none = "true";
+            console.log(dev_none);
+// Find the select element
+            var branchSelect = document.getElementById("branch");
+            console.log(branchSelect);
+// Find the option with value "Dev Branch"
+            var devBranchOption = branchSelect.querySelector("option[value='Dev Branch']");
+
+// Remove the "Dev Branch" option
+            if (devBranchOption) {
+                devBranchOption.remove();
+            }
+
+        } else {
+            dev_none = "false";
+            console.log(dev_none);
+        }
+
+                var main_none;
+        if (Object.keys({{ default_values_main|tojson }}).length === 0) {
+            main_none = "true";
+            console.log(main_none);
+// Find the select element
+            var branchSelect = document.getElementById("branch");
+            console.log(branchSelect);
+// Find the option with value "Dev Branch"
+            var mainBranchOption = branchSelect.querySelector("option[value='Main Branch']");
+
+// Remove the "Dev Branch" option
+            if (mainBranchOption) {
+                mainBranchOption.remove();
+            }
+
+        } else {
+            main_none = "false";
+            console.log(main_none);
+        }
+
+        if (main_none === "true " && dev_none === "true") {
+            alert("SillyTavern Not installed")
+        }
+
+        }
+
+        window.onload = function() {
+            CheckBranches();
+            loadDefaults();
+        }
+    </script>
 
 </head>
 <body>
-    <h1 class="text-center">Configuration Editor</h1>
-    <div class="form-container">
-        <form action="/config-update" method="POST">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            General
+<h1 class="text-center">Configuration Editor</h1>
+<div class="form-container">
+      <!--<div class="spec-button-grid button-grid" style="margin-top: 10px;margin-bottom: 10px;">
+            <button onclick="loadDefaults()" class="btn btn-primary">Open Config file for selected branch</button>
+                        </div>-->
+    <form action="/config-update" method="POST">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        General
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="branch">Select the branch to edit:</label>
+                            <select class="form-control" name="branch" id="branch" onchange="loadDefaults()">
+                                <option value="Main Branch">Main Branch</option>
+                                <option value="Dev Branch">Dev Branch</option>
+                            </select>
+                            <small class="form-text text-muted">Select the branch for editing the config file.</small>
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label for="branch">Select the branch to edit:</label>
-                                <select class="form-control" name="branch" id="branch" onchange="loadDefaults()">
-                                    <option value="Main Branch">Main Branch</option>
-                                    <option value="Dev Branch">Dev Branch</option>
-                                </select>
-                                <small class="form-text text-muted">Select the branch for editing the config file.</small>
+                        <div class="form-group">
+                            <label for="port">Port:</label>
+                            <input type="text" class="form-control" name="port" id="port"
+                                   value="">
+                            <small class="form-text text-muted">Enter the port number for the server.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="disableThumbnails">Disable Thumbnails:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="disableThumbnails"
+                                       id="disableThumbnails" value="true" checked>
+                                <label class="form-check-label" for="disableThumbnails">
+                                    Disable Thumbnails
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="port">Port:</label>
-                                <input type="text" class="form-control" name="port" id="port" value="{{ default_values.port }}">
-                                <small class="form-text text-muted">Enter the port number for the server.</small>
+                            <small class="form-text text-muted">Disables the generation of thumbnails, opting to use the
+                                raw images instead.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="autorun">Autorun:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="autorun" id="autorun" value="true" checked>
+                                <label class="form-check-label" for="autorun">
+                                    Enable Autorun
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="disableThumbnails">Disable Thumbnails:</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="disableThumbnails" id="disableThumbnails" value="true" {% if default_values.disableThumbnails %}checked{% endif %}>
-                                    <label class="form-check-label" for="disableThumbnails">
-                                        Disable Thumbnails
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">Disables the generation of thumbnails, opting to use the raw images instead.</small>
+                            <small class="form-text text-muted">If true, the application will autorun in the
+                                browser.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="enableExtensions">Enable Extensions:</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="enableExtensions"
+                                       id="enableExtensions" value="true" checked>
+                                <label class="form-check-label" for="enableExtensions">
+                                    Enable Extensions
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="autorun">Autorun:</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="autorun" id="autorun" value="true" {% if default_values.autorun %}checked{% endif %}>
-                                    <label class="form-check-label" for="autorun">
-                                        Enable Autorun
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">If true, the application will autorun in the browser.</small>
-                            </div>
-                            <div class="form-group">
-                                <label for="enableExtensions">Enable Extensions:</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="enableExtensions" id="enableExtensions" value="true" {% if default_values.enableExtensions %}checked{% endif %}>
-                                    <label class="form-check-label" for="enableExtensions">
-                                        Enable Extensions
-                                    </label>
-                                </div>
-                                <small class="form-text text-muted">Enables support for TavernAI-extras project.</small>
-                            </div>
+                            <small class="form-text text-muted">Enables support for TavernAI-extras project.</small>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            Security
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="whitelist">Whitelist:</label>
-                                        <input type="text" class="form-control" name="whitelist" id="whitelist" value="{{ default_values.whitelist }}">
-                                        <small class="form-text text-muted">Example for adding several IP addresses in the whitelist: ['127.0.0.1', '192.168.0.10']</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="whitelistMode">Whitelist Mode:</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="whitelistMode" id="whitelistMode" value="true" {% if default_values.whitelistMode %}checked{% endif %}>
-                                            <label class="form-check-label" for="whitelistMode">
-                                                Enable Whitelist Mode
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">Disabling or enabling the IP whitelist mode.</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="basicAuthMode">Basic Auth Mode:</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="basicAuthMode" id="basicAuthMode" value="true" {% if default_values.basicAuthMode %}checked{% endif %}>
-                                            <label class="form-check-label" for="basicAuthMode">
-                                                Enable Basic Auth Mode
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">Toggle basic user/password on launch.</small>
-                                    </div>
-                                                                    <div class="form-group">
-                                        <label for="basicAuthUsername">Basic Auth Username:</label>
-                                        <input type="text" class="form-control" name="basicAuthUsername" id="basicAuthUsername" value="{{ default_values.basicAuthUser.username }}">
-                                        <small class="form-text text-muted">Enter the username for basic authentication.</small>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="basicAuthPassword">Basic Auth Password:</label>
-                                        <input type="text" class="form-control" name="basicAuthPassword" id="basicAuthPassword" value="{{ default_values.basicAuthUser.password }}">
-                                        <small class="form-text text-muted">Enter the password for basic authentication.</small>
-                                    </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        Security
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="whitelist">Whitelist:</label>
+                                    <input type="text" class="form-control" name="whitelist" id="whitelist"
+                                           value="">
+                                    <small class="form-text text-muted">Example for adding several IP addresses in the
+                                        whitelist: 127.0.0.1,192.168.0.10 (Separate IPs by commas, no spaces)</small>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label for="listen">Listen:</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="listen" id="listen" value="true" {% if default_values.listen %}checked{% endif %}>
-                                            <label class="form-check-label" for="listen">
-                                                Enable Listen
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">If true, can be accessed from other devices or PCs; otherwise, can only be accessed from the hosting machine.</small>
+                                <div class="form-group">
+                                    <label for="whitelistMode">Whitelist Mode:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="whitelistMode"
+                                               id="whitelistMode" value="true" checked>
+                                        <label class="form-check-label" for="whitelistMode">
+                                            Enable Whitelist Mode
+                                        </label>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="allowKeysExposure">Allow Keys Exposure:</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="allowKeysExposure" id="allowKeysExposure" value="true" {% if default_values.allowKeysExposure %}checked{% endif %}>
-                                            <label class="form-check-label" for="allowKeysExposure">
-                                                Allow Keys Exposure
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">If true, private API keys could be fetched to the frontend.</small>
+                                    <small class="form-text text-muted">Disabling or enabling the IP whitelist
+                                        mode.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="basicAuthMode">Basic Auth Mode:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="basicAuthMode"
+                                               id="basicAuthMode" value="true" checked>
+                                        <label class="form-check-label" for="basicAuthMode">
+                                            Enable Basic Auth Mode
+                                        </label>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="securityOverride">&#9760;Security Override:</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="securityOverride" id="securityOverride" value="true" {% if default_values.securityOverride %}checked{% endif %}>
-                                            <label class="form-check-label" for="securityOverride">
-                                                &#9760;Enable Security Override&#9760;
-                                            </label>
-                                        </div>
-                                        <small class="form-text text-muted">DANGER: Change this setting only on "trusted networks". Do not change this value unless you are aware of the issues that can arise from changing this setting and configuring an insecure setting.</small>
+                                    <small class="form-text text-muted">Toggle basic user/password on launch.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="basicAuthUsername">Basic Auth Username:</label>
+                                    <input type="text" class="form-control" name="basicAuthUsername"
+                                           id="basicAuthUsername"
+                                           value="">
+                                    <small class="form-text text-muted">Enter the username for basic
+                                        authentication.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="basicAuthPassword">Basic Auth Password:</label>
+                                    <input type="text" class="form-control" name="basicAuthPassword"
+                                           id="basicAuthPassword"
+                                           value="">
+                                    <small class="form-text text-muted">Enter the password for basic
+                                        authentication.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="listen">Listen:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="listen" id="listen"
+                                               value="true" checked>
+                                        <label class="form-check-label" for="listen">
+                                            Enable Listen
+                                        </label>
                                     </div>
+                                    <small class="form-text text-muted">If true, can be accessed from other devices or
+                                        PCs; otherwise, can only be accessed from the hosting machine.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="allowKeysExposure">Allow Keys Exposure:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="allowKeysExposure"
+                                               id="allowKeysExposure" value="true" checked>
+                                        <label class="form-check-label" for="allowKeysExposure">
+                                            Allow Keys Exposure
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">If true, private API keys could be fetched to
+                                        the frontend.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="securityOverride">&#9760;Security Override:</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="securityOverride"
+                                               id="securityOverride" value="true" checked>
+                                        <label class="form-check-label" for="securityOverride">
+                                            &#9760;Enable Security Override&#9760;
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">DANGER: Change this setting only on "trusted
+                                        networks". Do not change this value unless you are aware of the issues that can
+                                        arise from changing this setting and configuring an insecure setting.</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="spec-button-grid button-grid" style="margin-top: 10px;">
-                <button type="submit" class="btn btn-primary">Update Config</button>
-            </div>
-        </form>
+        </div>
         <div class="spec-button-grid button-grid" style="margin-top: 10px;">
-         <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
+            <button type="submit" class="btn btn-primary">Update Config</button>
+        </div>
+    </form>
+    <div class="spec-button-grid button-grid" style="margin-top: 10px;">
+        <button class="btn btn-secondary" onclick="goToIndex()">Return to Home</button>
     </div>
-    </div>
+</div>
 
 
-    <script>
-        function goToIndex() {
-            window.location.href = '/';
-        }
+<script>
+    function goToIndex() {
+        window.location.href = '/';
+    }
 </script>
 </body>
 </html>
