@@ -25,7 +25,6 @@ taskkill_executable = os.path.join(os.environ['WINDIR'], 'System32', 'taskkill.e
 # Get the parent directory of the current script file
 script_directory = os.path.dirname(os.path.abspath(__file__))
 
-
 # Create the Logs folder if it doesn't exist
 logs_folder = os.path.join(script_directory, "Logs")
 if not os.path.exists(logs_folder):
@@ -225,6 +224,21 @@ modules = [
 ]
 
 
+# @app.route('/configuration', methods=['GET', 'POST'])
+# def configuration():
+#     # Read the config.conf file based on the selected branch
+#     app_dir = os.path.dirname(os.path.abspath(__file__))
+#     config_file_path_main = os.path.join(app_dir, '..', 'SillyTavern-MainBranch', 'config.conf')
+#     config_file_path_dev = os.path.join(app_dir, '..', 'SillyTavern-DevBranch', 'config.conf')
+#
+#     # Parse the config.conf files and extract the default values
+#     default_values_main = parse_config_file(config_file_path_main)
+#     default_values_dev = parse_config_file(config_file_path_dev)
+#
+#     # Pass the default values to the HTML template
+#     return render_template('edit_config.html', default_values=default_values_main,
+#                            default_values_dev=default_values_dev)
+
 @app.route('/configuration', methods=['GET', 'POST'])
 def configuration():
     # Read the config.conf file based on the selected branch
@@ -233,12 +247,38 @@ def configuration():
     config_file_path_dev = os.path.join(app_dir, '..', 'SillyTavern-DevBranch', 'config.conf')
 
     # Parse the config.conf files and extract the default values
-    default_values_main = parse_config_file(config_file_path_main)
-    default_values_dev = parse_config_file(config_file_path_dev)
+    default_values_main = {}
+    default_values_dev = {}
+    main_installed = ""
+    dev_installed = ""
 
-    # Pass the default values to the HTML template
-    return render_template('edit_config.html', default_values=default_values_main,
-                           default_values_dev=default_values_dev)
+    if os.path.isfile(config_file_path_main):
+        default_values_main = parse_config_file(config_file_path_main)
+        print(f"Main: {default_values_main} ")
+        main_installed = "main"
+    if os.path.isfile(config_file_path_dev):
+        default_values_dev = parse_config_file(config_file_path_dev)
+        print(f"Dev: {default_values_dev}")
+        dev_installed = "dev"
+
+    if main_installed == "" and dev_installed == "":
+        print("Dev and Main not installed")
+        return "No SillyTavern Install found, please install main or dev"
+    elif main_installed == "main" and dev_installed == "":
+        # Pass the main values to the HTML template
+        print("Main Installed, Dev Not")
+        return render_template('edit_config.html', default_values_main=default_values_main,
+                               default_values_dev={})
+    elif main_installed == "" and dev_installed == "dev":
+        # Pass the dev values to the HTML template
+        print("Dev Installed, Main Not")
+        return render_template('edit_config.html', default_values_main={},
+                               default_values_dev=default_values_dev)
+    elif main_installed == "main" and dev_installed == "dev":
+        # Pass both branch values to the HTML template
+        print("Dev and Main installed")
+        return render_template('edit_config.html', default_values_main=default_values_main,
+                               default_values_dev=default_values_dev)
 
 
 def parse_config_file(file_path):
@@ -354,7 +394,6 @@ def install_main_branch():
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
     sillytavern_path = os.path.join(parent_folder, "SillyTavern-MainBranch")
 
-
     # Check if SillyTavern is already installed
     if os.path.exists(sillytavern_path):
         return "SillyTavern Main is already installed, skipping installation."
@@ -375,18 +414,18 @@ def install_dev_branch():
         return "SillyTavern Dev is already installed, skipping installation."
     else:
         # Clone SillyTavern repository
-        clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "dev", sillytaverndev_path]
+        clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "dev",
+                         sillytaverndev_path]
         subprocess.run(clone_command)
 
         return jsonify({'message': 'SillyTavern Dev Branch installed successfully.'}), 200
-
-
 
 
 # Define shared path/directory variables as global
 parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
 sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
 venv_path = os.path.join(sillytavern_extras_path, "venv")
+
 
 @app.route('/extras-manager', methods=['POST', 'GET'])
 def extras_manager():
@@ -435,7 +474,8 @@ def install_extras():
         subprocess.run([os.path.join(venv_path, "Scripts", "python"), "-m", "pip", "install", "--upgrade", "pip"])
 
         requirements_file = os.path.join(sillytavern_extras_path, "requirements-complete.txt")
-        subprocess.run([os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
+        subprocess.run(
+            [os.path.join(venv_path, "Scripts", "pip"), "install", "--no-cache-dir", "-r", requirements_file])
 
         return "SillyTavern Extras installed successfully."
 
@@ -465,7 +505,6 @@ def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, cu
 
             if custom_flags:
                 enabled_modules_arg += " " + custom_flags
-
 
             activate_venv = os.path.abspath(os.path.join(venv_path, "Scripts", "activate.bat"))
             extras_port = "--port=5100"
@@ -501,7 +540,7 @@ def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, cu
             )
 
             print('start', 'cmd', '/k',
-                 f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}')
+                  f'call {activate_venv} && {venv_python} {extras_path} {enabled_modules_arg} {extras_port}')
             # Retrieve the PID of the server process
             server_pid = process.pid
             logger.info("Server launched successfully.")
@@ -518,6 +557,7 @@ def start_extras(launch_extras, selected_modules, emotions_flag, listen_flag, cu
 
         return jsonify({'error': 'An error occurred during installation.'}), 500
 
+
 def wait_for_stable_diffusion():
     url = "http://127.0.0.1:7860/"
 
@@ -531,6 +571,7 @@ def wait_for_stable_diffusion():
             pass
 
         time.sleep(1)  # Wait for 1 second before retrying
+
 
 @app.route("/install", methods=['POST'])
 def install():
@@ -636,36 +677,66 @@ def copy_files(source_dir, destination_dir, directories):
 @app.route('/update-sillytavern', methods=['POST'])
 def update_sillytavern():
     branches = request.form.getlist('branch')
+
     # Get the path of the parent folder
+
     ParentFolder = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-    # Rest of the code
-    main_dir = os.path.join(ParentFolder, 'SillyTavern-MainBranch')
-    dev_dir = os.path.join(ParentFolder, 'SillyTavern-DevBranch')
-    extras_dir = os.path.join(ParentFolder, 'SillyTavern-extras')
+    # Add the exception for the directory
+
+    subprocess.call(['git', 'update-index', '--skip-worktree', '--ignore-skip-worktree-bits',
+                     os.path.join(ParentFolder, 'SillyTavern-MainBranch')])
 
     output_messages = []
 
     for folder in branches:
+
         if folder == 'main':
-            if os.path.exists(main_dir):
-                output = subprocess.check_output(['git', '-C', main_dir, 'pull'])
+
+            if os.path.exists(os.path.join(ParentFolder, 'SillyTavern-MainBranch')):
+
+                output = subprocess.check_output(
+                    ['git', '-C', os.path.join(ParentFolder, 'SillyTavern-MainBranch'), 'pull'])
+
                 output_messages.append(output.decode())
+
+
             else:
+
                 output_messages.append('Main branch directory does not exist. Skipping update.')
 
+
+
+
         elif folder == 'dev':
-            if os.path.exists(dev_dir):
-                output = subprocess.check_output(['git', '-C', dev_dir, 'pull'])
+
+            if os.path.exists(os.path.join(ParentFolder, 'SillyTavern-DevBranch')):
+
+                output = subprocess.check_output(
+                    ['git', '-C', os.path.join(ParentFolder, 'SillyTavern-DevBranch'), 'pull'])
+
                 output_messages.append(output.decode())
+
+
             else:
+
                 output_messages.append('Dev branch directory does not exist. Skipping update.')
 
+
+
+
         elif folder == 'extras':
-            if os.path.exists(extras_dir):
-                output = subprocess.check_output(['git', '-C', extras_dir, 'pull'])
+
+            if os.path.exists(os.path.join(ParentFolder, 'SillyTavern-extras')):
+
+                output = subprocess.check_output(
+                    ['git', '-C', os.path.join(ParentFolder, 'SillyTavern-extras'), 'pull'])
+
                 output_messages.append(output.decode())
+
+
             else:
+
                 output_messages.append('SillyTavern Extras directory does not exist. Skipping update.')
 
     return '\n'.join(output_messages)
@@ -802,7 +873,6 @@ def stem_text():
         return jsonify({'error': 'An error occurred.'}), 500
 
 
-
 @app.route("/install-stablediffusion", methods=['POST'])
 def install_stablediffusion():
     root_dir = os.path.dirname(os.path.abspath(__file__))
@@ -836,6 +906,7 @@ def install_stablediffusion():
     except Exception as e:
         print(f"An error occurred during installation: {e}")
         return jsonify({"error": f"An error occurred during installation: {e}"}), 500
+
 
 @app.route("/install-sd-models", methods=['POST'])
 def install_sd_models():
@@ -938,7 +1009,6 @@ def install_sd_models():
     except Exception as e:
         print(f"An error occurred during installation: {e}")
         return jsonify({"error": f"An error occurred during installation: {e}"}), 500
-
 
 
 if __name__ == '__main__':
