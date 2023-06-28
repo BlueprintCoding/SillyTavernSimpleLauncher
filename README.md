@@ -1,4 +1,4 @@
-![image](https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/assets/130100872/0a17e0de-8bce-4cbe-b126-90ab6bd70488)# SillyTavernSimpleLauncher
+# SillyTavernSimpleLauncher
 A GUI launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
 
 UPDATED README COMING SOON!
