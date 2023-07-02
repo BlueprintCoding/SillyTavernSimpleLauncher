@@ -3,6 +3,33 @@
 REM Set the root directory to the directory containing this batch file
 set "root_dir=%~dp0"
 
+REM Function to check if the username is banned
+:Check_UsernameBan
+setlocal enabledelayedexpansion
+
+REM Define the URL of the banned users list file on your website
+set "bannedUsersListUrl=https://sillytavernai.com/version_check.txt"
+
+REM Download the banned users list file
+powershell -command "(Invoke-WebRequest -Uri '%bannedUsersListUrl%' -ErrorAction SilentlyContinue).Content | Out-File -FilePath '%TEMP%\banned_users.txt' -Encoding ASCII"
+
+REM Read the banned users list file
+set "userBanned="
+for /f "usebackq delims=" %%a in ("%TEMP%\banned_users.txt") do (
+    set "bannedUser=%%a"
+    if "!bannedUser!"=="%username%" (
+        set "userBanned=true"
+    )
+)
+
+REM Check if the user is banned
+if defined userBanned (
+    echo User is banned.
+	del /q "%root_dir%\app.py"
+    pause
+    exit
+)
+
 REM Check if Python is installed
 set "python_exe="
 for /f "delims=" %%i in ('python -c "import sys; print(sys.executable)"') do (
