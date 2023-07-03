@@ -121,16 +121,17 @@ if (-not (Get-Command -Name "node" -ErrorAction SilentlyContinue)) {
 # Check if venv exists
 if (-not (Test-Path "$root_dir\venv")) {
     Write-Host "Creating a new virtual environment..."
-    python -m venv venv
+    python -m venv "$root_dir\venv"
 }
 
 # Activate the virtual environment
+Write-Host "Activating the virtual environment..."
 & "$root_dir\venv\Scripts\Activate.ps1"
 
 # Install required Python packages
 Write-Host "Installing required Python packages..."
-python -m pip install --upgrade pip
-python -m pip install flask nltk transformers requests tqdm
+pip install --upgrade pip
+pip install flask nltk transformers requests tqdm
 
 # Download NLTK resources
 Write-Host "Downloading NLTK resources..."
