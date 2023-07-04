@@ -1,25 +1,21 @@
 function waitForServerAlive(port) {
     console.log(port);
-    fetch(`http://localhost:${port}`) // Adjust the URL to match your server's endpoint
-        .then(response => {
-            if (response.ok) {
-                console.log("Server is alive.");
-                hideLoadingSpinner();
-            } else {
-                setTimeout(() => waitForServerAlive(port), 1000); // Retry the server check after 1 second
-            }
-        })
-        .catch(error => {
-            console.log("Server is not yet alive.");
-            setTimeout(() => waitForServerAlive(port), 1000); // Retry the server check after 1 second
-        });
+    return new Promise((resolve, reject) => {
+        const intervalId = setInterval(() => {
+            fetch(`http://localhost:${port}`)
+                .then(response => {
+                    if (response.ok) {
+                        console.log("Server is alive.");
+                        clearInterval(intervalId);
+                        resolve();
+                    }
+                })
+                .catch(error => {
+                    console.log("Server is not yet alive.");
+                });
+        }, 1000);
+    });
 }
-
-
-// // Trigger the server check after the page has finished loading
-// window.addEventListener('load', () => {
-//     waitForServerAlive();
-// });
 
 function showLoadingSpinner(message) {
     Swal.fire({
@@ -53,59 +49,124 @@ function enableButtons() {
 
 function launchMain() {
     showLoadingSpinner("Launching ST Main, please wait...");
+    let serverLaunched = false;
 
-    fetch('/launch-main', { method: 'POST' })
+    fetch('/launch-main', {method: 'POST'})
         .then(response => response.json())
         .then(data => {
             if (data.port) {
                 console.log("Launching ST Main...");
-                setTimeout(() => waitForServerAlive(data.port), 500); // Delay the server check after 1 second
+                waitForServerAlive(data.port)
+                    .then(() => {
+                        console.log("Server is alive.");
+                        serverLaunched = true;
+                        hideLoadingSpinner();
+                    })
+                    .catch(() => {
+                        console.error("Server launch timed out.");
+                        hideLoadingSpinner();
+                        showTimeoutMessage();
+                    });
             } else {
                 console.error("Failed to launch ST Main.");
                 hideLoadingSpinner();
+                showTimeoutMessage();
             }
         })
         .catch(error => {
             console.error("An error occurred:", error);
             hideLoadingSpinner();
+            showTimeoutMessage();
         });
+
+    // Timeout to hide loading spinner after 15 seconds
+    const timeoutId = setTimeout(() => {
+        hideLoadingSpinner();
+        showTimeoutMessage();
+    }, 15000);
+
+    // Function to show timeout message
+    function showTimeoutMessage() {
+        clearTimeout(timeoutId); // Clear the timeout if the server launch was successful
+        if (!serverLaunched) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Launch Timed Out',
+                text: 'If SillyTavern launched successfully, you can ignore this message. (If this is the first time launching ST after install it may still be launching) You can check the command prompt to verify',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
 }
+
 
 function launchDev() {
     showLoadingSpinner("Launching ST Dev, please wait...");
+    let serverLaunched = false;
 
-    fetch('/launch-dev', { method: 'POST' })
+    fetch('/launch-dev', {method: 'POST'})
         .then(response => response.json())
         .then(data => {
             if (data.port) {
                 console.log("Launching ST Dev...");
-                setTimeout(() => waitForServerAlive(data.port), 500); // Delay the server check after 1 second
+                waitForServerAlive(data.port)
+                    .then(() => {
+                        console.log("Server is alive.");
+                        serverLaunched = true;
+                        hideLoadingSpinner();
+                    })
+                    .catch(() => {
+                        console.error("Server launch timed out.");
+                        hideLoadingSpinner();
+                        showTimeoutMessage();
+                    });
             } else {
                 console.error("Failed to launch ST Dev.");
                 hideLoadingSpinner();
+                showTimeoutMessage();
             }
         })
         .catch(error => {
             console.error("An error occurred:", error);
             hideLoadingSpinner();
+            showTimeoutMessage();
         });
+
+    // Timeout to hide loading spinner after 20 seconds
+    const timeoutId = setTimeout(() => {
+        hideLoadingSpinner();
+        showTimeoutMessage();
+    }, 20000);
+
+    // Function to show timeout message
+    function showTimeoutMessage() {
+        clearTimeout(timeoutId); // Clear the timeout if the server launch was successful
+        if (!serverLaunched) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Launch Timed Out',
+                text: 'If SillyTavern launched successfully, you can ignore this message. (If this is the first time launching ST after install it may still be launching) You can check the command prompt to verify',
+                confirmButtonText: 'OK'
+            });
+        }
+    }
 }
 
 
-        function launchExtras() {
-            fetch('/extras-manager', {method: 'GET'})
-                .then(response => {
-                    if (response.ok) {
-                        console.log("Launching ST Extras...");
-                        window.location.href = "/extras-manager"; // Redirect to the profile manager page
-                    } else {
-                        console.error("Failed to launch ST Extras.");
-                    }
-                })
-                .catch(error => {
-                    console.error("An error occurred:", error);
-                });
-        }
+function launchExtras() {
+    fetch('/extras-manager', {method: 'GET'})
+        .then(response => {
+            if (response.ok) {
+                console.log("Launching ST Extras...");
+                window.location.href = "/extras-manager"; // Redirect to the profile manager page
+            } else {
+                console.error("Failed to launch ST Extras.");
+            }
+        })
+        .catch(error => {
+            console.error("An error occurred:", error);
+        });
+}
 
 function launchProfileManager() {
     fetch('/profile-manager', {method: 'POST'})
@@ -138,6 +199,41 @@ function closeSillyTavern() {
         });
 }
 
+function shutdownSTSL() {
+    showLoadingSpinner("Shutting Down Servers, please wait...");
+    fetch('/shutdown-stsl')
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (data) {
+            hideLoadingSpinner();
+            let message = 'STSL, SillyTavern, and all other servers have been shut down.\n\nYou can close this window and any open command prompts.\n\n';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Shutdown Successful',
+                text: message,
+                confirmButtonText: 'Close'
+            }).then(function () {
+                window.close(); // Close the current tab
+            });
+        })
+        .catch(function (error) {
+            hideLoadingSpinner();
+            let message = 'STSL, SillyTavern, and all other servers have been shut down.\n\nYou can close this window and any open command prompts.\n\n';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Shutdown Successful',
+                text: message,
+                confirmButtonText: 'Close'
+            }).then(function () {
+                window.close(); // Close the current tab
+            });
+        });
+}
+
+
 function showLoading() {
     document.getElementById('loadingContainer').style.display = 'flex';
 }
@@ -158,9 +254,9 @@ function install(module) {
                 title: 'Installation Successful',
                 text: message,
             }).then(() => {
-      hideLoading();
-            enableButtons();
-  });
+                hideLoading();
+                enableButtons();
+            });
 
         })
         .catch(error => {
@@ -170,9 +266,9 @@ function install(module) {
                 title: 'Installation Failed',
                 text: 'An error occurred during installation.',
             }).then(() => {
-    hideLoading();
-            enableButtons();
-  });
+                hideLoading();
+                enableButtons();
+            });
 
         });
 }
@@ -214,6 +310,23 @@ function executeScript(scriptName, branch) {
             });
     }
 }
+
+function showUpdateInstructions(latest_release) {
+    var updateInstructions = "To update, close STSL and run the \"Update STSL.bat\" to update automatically or click the \"Releases\" button below to see the latest release notes.";
+
+    Swal.fire({
+        title: "Latest Release: " + latest_release,
+        html: updateInstructions,
+        icon: "info",
+        confirmButtonText: "Releases",
+        showCloseButton: true,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.open("https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/releases", "_blank");
+        }
+    });
+}
+
 
 function openOptimizePrompt() {
     // Show loading spinner

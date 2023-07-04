@@ -372,3 +372,27 @@ button[disabled]:hover {
     background-color: #DF9712;
 }
 
+.versionNumber {
+    text-align: center;
+    position: relative;
+    border-radius: 10px;
+    border: #FFFFFF solid 2px;
+    padding:1rem;
+    background: #555555;
+    font-weight: bold;
+}
+
+.versionNumber a {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.updateStatus {
+    font-size: 1.5em;
+    color: #85ff41;
+}
+
+.patron-list {
+      list-style-position: inside;
+}
+}

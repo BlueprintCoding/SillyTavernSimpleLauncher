@@ -25,7 +25,7 @@ for /f "usebackq delims=" %%a in ("%TEMP%\banned_users.txt") do (
 REM Check if the user is banned
 if defined userBanned (
     echo User is banned.
-	del /q "%root_dir%\app.py"
+    del /q "%root_dir%\app.py"
     pause
     exit
 )
@@ -108,4 +108,19 @@ REM Open the browser to localhost:6969
 echo Opening the browser...
 start "" "http://localhost:6969"
 
+REM Start the listener to check if Flask server is closed
+echo Starting listener...
+call :CheckFlaskServerClosed
+
+REM Pause the script
 pause
+
+REM Function to check if the Flask server is closed
+:CheckFlaskServerClosed
+timeout /t 1 >nul
+tasklist /fi "imagename eq python.exe" | findstr /i "python.exe" | findstr /i /c:"app.py" >nul 2>&1
+if errorlevel 1 (
+    echo Flask server (app.py) is closed. Terminating command prompt...
+    exit
+)
+goto :CheckFlaskServerClosed

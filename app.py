@@ -7,7 +7,6 @@ from flask import Flask, render_template, request, jsonify, redirect
 from datetime import datetime
 import socket
 import nltk
-import shutil
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -17,6 +16,7 @@ import requests
 from tqdm import tqdm
 import time
 import threading
+from config import APP_VERSION
 
 app = Flask(__name__)
 home_folder = os.path.dirname(os.path.abspath(__file__))
@@ -24,6 +24,7 @@ home_folder = os.path.dirname(os.path.abspath(__file__))
 taskkill_executable = os.path.join(os.environ['WINDIR'], 'System32', 'taskkill.exe')
 # Get the parent directory of the current script file
 script_directory = os.path.dirname(os.path.abspath(__file__))
+
 
 # Create the Logs folder if it doesn't exist
 logs_folder = os.path.join(script_directory, "Logs")
@@ -116,23 +117,6 @@ def copy_instance_files(source, destination):
 
 @app.route("/")
 def index():
-    # # Get the external IP address
-    # external_ip = get_external_ip()
-    #
-    # # Use the IP address as the unique identifier
-    # unique_id = external_ip
-    #
-    # # Construct the URL with the unique identifier as a query parameter
-    # url = f'https://sillytavernai.com/track-usage?uid={unique_id}'
-    #
-    # # Send a GET request to the URL
-    # response = requests.get(url)
-    #
-    # # Process the response if needed
-    # # ...
-    #
-    #
-
     # Check if SillyTavern MainBranch exists
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
     sillytavern_main_path = os.path.join(parent_folder, "SillyTavern-MainBranch")
@@ -149,8 +133,20 @@ def index():
     # Check if repositories are cloned
     repos_cloned = check_repos_cloned()
 
+    # Get latest repo release number
+    def get_latest_release():
+        url = "https://api.github.com/repos/BlueprintCoding/SillyTavernSimpleLauncher/releases/latest"
+        response = requests.get(url)
+        if response.status_code == 200:
+            release_data = response.json()
+            return release_data["tag_name"]
+        else:
+            return None
 
-    return render_template('index.html', repos_cloned=repos_cloned)
+    latest_release = get_latest_release()
+
+
+    return render_template('index.html', repos_cloned=repos_cloned, app_version=APP_VERSION,latest_release=latest_release)
 
 
 @app.route("/migrate-profile", methods=["GET"])
@@ -419,6 +415,41 @@ def close_sillytavern():
     os.system(f'"{taskkill_executable}" /f /im node.exe')
     return "Closing ST..."
 
+@app.route("/shutdown-stsl", methods=['GET', 'POST'])
+def shutdown_servers():
+    # Terminate Node.js servers
+    node_servers = []
+    try:
+        result = subprocess.run(['taskkill', '/im', 'node.exe', '/f'], capture_output=True, text=True, timeout=2)
+        if result.returncode == 0:
+            node_servers.append("Node.js servers")
+            print("Node.js servers terminated successfully.")
+        else:
+            print("No Node.js servers found.")
+    except subprocess.TimeoutExpired:
+        print("Terminating Node.js servers timed out.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while terminating Node.js servers: {e}")
+
+    # Terminate Python servers
+    python_servers = []
+    try:
+        subprocess.run(['taskkill', '/im', 'python.exe', '/f'], timeout=2)
+        python_servers.append("Python servers")
+        print("Python servers terminated successfully.")
+    except subprocess.TimeoutExpired:
+        print("Terminating Python servers timed out.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error occurred while terminating Python servers: {e}")
+
+    response_data = {
+        "node_servers": node_servers,
+        "python_servers": python_servers,
+    }
+
+    return jsonify(response_data)
+
+
 
 @app.route("/install-main-branch", methods=['GET', 'POST'])
 def install_main_branch():
@@ -430,8 +461,10 @@ def install_main_branch():
         return "SillyTavern Main is already installed, skipping installation."
     else:
         # Clone SillyTavern repository
-        clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "main", sillytavern_path]
-        subprocess.Popen(clone_command).wait()
+        clone_command = [
+            "git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "main", sillytavern_path
+        ]
+        subprocess.run(clone_command)
         return 'SillyTavern Main Branch installed successfully.'
 
 
@@ -445,11 +478,13 @@ def install_dev_branch():
         return "SillyTavern Dev is already installed, skipping installation."
     else:
         # Clone SillyTavern repository
-        clone_command = ["git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "dev",
-                         sillytaverndev_path]
+        clone_command = [
+            "git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "dev", sillytaverndev_path
+        ]
         subprocess.run(clone_command)
 
         return 'SillyTavern Dev Branch installed successfully.'
+
 
 
 # Define shared path/directory variables as global
@@ -1046,4 +1081,4 @@ if __name__ == '__main__':
     # host = get_local_ip()
     port = 6969
     # print(host)
-    app.run(port=port)
+    app.run(port=port,debug=True)
