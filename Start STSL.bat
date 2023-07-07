@@ -63,6 +63,15 @@ if errorlevel 1 (
     exit /b
 )
 
+REM Check if Git is installed
+git --version >nul 2>&1
+if errorlevel 1 (
+    echo Git is not installed.
+    echo Please run "Install STSL.bat" to install all the requirements.
+    pause
+    exit /b
+)
+
 REM Check if the virtual environment exists
 if not exist "%root_dir%\venv" (
     echo Virtual environment not found.
@@ -108,19 +117,22 @@ REM Open the browser to localhost:6969
 echo Opening the browser...
 start "" "http://localhost:6969"
 
+
 REM Start the listener to check if Flask server is closed
 echo Starting listener...
-call :CheckFlaskServerClosed
+start "" cmd /c "call :CheckFlaskServerClosed"
+exit /b
 
-REM Pause the script
-pause
-
-REM Function to check if the Flask server is closed
 :CheckFlaskServerClosed
 timeout /t 1 >nul
-tasklist /fi "imagename eq python.exe" | findstr /i "python.exe" | findstr /i /c:"app.py" >nul 2>&1
+tasklist /fi "imagename eq python.exe" | findstr /i "app.py" >nul 2>&1
 if errorlevel 1 (
     echo Flask server (app.py) is closed. Terminating command prompt...
     exit
 )
 goto :CheckFlaskServerClosed
+
+REM Pause the script
+pause
+
+

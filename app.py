@@ -1081,4 +1081,4 @@ if __name__ == '__main__':
     # host = get_local_ip()
     port = 6969
     # print(host)
-    app.run(port=port,debug=True)
+    app.run(port=port)

@@ -1,5 +1,7 @@
 @echo off
 SETLOCAL ENABLEDELAYEDEXPANSION
+setlocal
+
 
 :: Get the path of the parent folder
 for %%I in ("%~dp0..\..") do set "ParentFolder=%%~fI"
@@ -60,7 +62,14 @@ git --version >nul 2>&1
 REM If Git is not installed, install it using winget
 if errorlevel 1 (
     echo Git is not installed. Installing Git...
-     winget install --id Git.Git -e --source winget
+    :: Uninstall Git
+@echo Uninstalling Git...
+winget uninstall --id Git.Git -e
+
+:: Install Git
+echo Installing Git...
+winget install --id Git.Git -e --source winget
+
 )
 
 REM Check if Node.js LTS is installed
@@ -110,3 +119,4 @@ echo Opening the browser...
 start "" "http://localhost:6969"
 
 pause
+endlocal
