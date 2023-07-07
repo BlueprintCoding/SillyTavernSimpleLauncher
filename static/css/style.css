@@ -392,6 +392,14 @@ button[disabled]:hover {
     color: #85ff41;
 }
 
+.extrasUpdateStatus, .STMUpdateStatus, .STDUpdateStatus {
+    color: #85ff41;
+}
+
 .patron-list {
       list-style-position: inside;
+}
+
+.sectionToggles{
+    text-align: center;
 }

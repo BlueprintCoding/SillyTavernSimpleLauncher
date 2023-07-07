@@ -4,10 +4,12 @@ function waitForServerAlive(port) {
         const intervalId = setInterval(() => {
             fetch(`http://localhost:${port}`)
                 .then(response => {
-                    if (response.ok) {
+                    if (response.ok || response.status === 401) {
                         console.log("Server is alive.");
                         clearInterval(intervalId);
                         resolve();
+                    } else {
+                        console.log("Server is not yet alive.");
                     }
                 })
                 .catch(error => {
@@ -85,18 +87,24 @@ function launchMain() {
         showTimeoutMessage();
     }, 15000);
 
-    // Function to show timeout message
-    function showTimeoutMessage() {
-        clearTimeout(timeoutId); // Clear the timeout if the server launch was successful
-        if (!serverLaunched) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Launch Timed Out',
-                text: 'If SillyTavern launched successfully, you can ignore this message. (If this is the first time launching ST after install it may still be launching) You can check the command prompt to verify',
-                confirmButtonText: 'OK'
-            });
-        }
+// Function to show timeout message
+function showTimeoutMessage() {
+    clearTimeout(timeoutId); // Clear the timeout if the server launch was successful
+    if (!serverLaunched) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Launch Timed Out',
+            text: 'If SillyTavern launched successfully, you can ignore this message. (If this is the first time launching ST after install it may still be launching) You can check the command prompt to verify',
+            confirmButtonText: 'OK'
+        });
+
+        // Hide the alert after 15 seconds
+        setTimeout(() => {
+            Swal.close();
+        }, 15000);
     }
+}
+
 }
 
 
@@ -304,6 +312,7 @@ function executeScript(scriptName, branch) {
             .then(response => response.text())
             .then(result => {
                 alert(result);
+                window.location.reload(); // Refresh the page
             })
             .catch(error => {
                 console.error('An error occurred:', error);

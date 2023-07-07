@@ -7,6 +7,7 @@ from flask import Flask, render_template, request, jsonify, redirect
 from datetime import datetime
 import socket
 import nltk
+import json
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -24,7 +25,6 @@ home_folder = os.path.dirname(os.path.abspath(__file__))
 taskkill_executable = os.path.join(os.environ['WINDIR'], 'System32', 'taskkill.exe')
 # Get the parent directory of the current script file
 script_directory = os.path.dirname(os.path.abspath(__file__))
-
 
 # Create the Logs folder if it doesn't exist
 logs_folder = os.path.join(script_directory, "Logs")
@@ -49,6 +49,7 @@ file_handler.setFormatter(formatter)
 
 # Add the file handler to the logger
 logger.addHandler(file_handler)
+
 
 # def get_external_ip():
 #     response = requests.get('https://api.ipify.org?format=json')
@@ -145,8 +146,78 @@ def index():
 
     latest_release = get_latest_release()
 
+    # Get latest repo ST Main release number
+    def get_latest_release_st():
+        url = "https://raw.githubusercontent.com/SillyTavern/SillyTavern/main/package-lock.json"
+        response = requests.get(url)
+        if response.status_code == 200:
+            package_lock_data = json.loads(response.text)
+            version = package_lock_data.get("version")
+            return version
+        else:
+            return None
 
-    return render_template('index.html', repos_cloned=repos_cloned, app_version=APP_VERSION,latest_release=latest_release)
+    latest_releaseSTmain = get_latest_release_st()
+
+    def get_dev_branch_version():
+        url = "https://raw.githubusercontent.com/SillyTavern/SillyTavern/dev/package-lock.json"
+        response = requests.get(url)
+        if response.status_code == 200:
+            package_lock_data = json.loads(response.text)
+            version = package_lock_data.get("version")
+            return version
+        else:
+            return None
+
+    latest_releaseSTdev = get_dev_branch_version()
+
+    def get_st_version_from_package_json(folder_path):
+        package_json_path = os.path.join(folder_path, "package.json")
+        version = None
+        if os.path.exists(package_json_path):
+            with open(package_json_path, 'r') as file:
+                data = json.load(file)
+            version = data.get('version')
+        return version
+
+    STM_version = get_st_version_from_package_json(sillytavern_main_path)
+    STD_version = get_st_version_from_package_json(sillytavern_dev_path)
+
+    def get_extras_installed_version(folder_path):
+        try:
+            # Change the working directory to the specified folder
+            subprocess.check_output(['git', 'rev-parse', '--git-dir'], cwd=folder_path)
+            # Get the current branch name
+            branch = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                                             cwd=folder_path).decode().strip()
+            # Get the latest commit hash
+            commit_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=folder_path).decode().strip()
+            # Combine branch and commit hash to create a version string
+            version = f'{branch}-{commit_hash}'
+            return version
+        except subprocess.CalledProcessError:
+            # Git command failed, return None indicating version is not available
+            return None
+
+    STE_version1 = get_extras_installed_version(sillytavern_extras_path)
+    STE_version  = STE_version1.lstrip("main-")
+
+    def get_installed_version_github_api():
+        url = f"https://api.github.com/repos/SillyTavern/SillyTavern-extras/commits/main"
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            commit_data = response.json()
+            commit_hash = commit_data["sha"]
+            return commit_hash
+        else:
+            return None
+
+    latest_releaseSTextras = get_installed_version_github_api()
+
+    return render_template('index.html', repos_cloned=repos_cloned, app_version=APP_VERSION,
+                           latest_release=latest_release, latest_releaseSTmain=latest_releaseSTmain,latest_releaseSTdev=latest_releaseSTdev,latest_releaseSTextras=latest_releaseSTextras,
+                           STM_version=STM_version,STD_version=STD_version,STE_version=STE_version)
 
 
 @app.route("/migrate-profile", methods=["GET"])
@@ -265,6 +336,7 @@ modules = [
     "edge-tts",
     "chromadb"
 ]
+
 
 @app.route('/configuration', methods=['GET', 'POST'])
 def configuration():
@@ -415,6 +487,7 @@ def close_sillytavern():
     os.system(f'"{taskkill_executable}" /f /im node.exe')
     return "Closing ST..."
 
+
 @app.route("/shutdown-stsl", methods=['GET', 'POST'])
 def shutdown_servers():
     # Terminate Node.js servers
@@ -450,7 +523,6 @@ def shutdown_servers():
     return jsonify(response_data)
 
 
-
 @app.route("/install-main-branch", methods=['GET', 'POST'])
 def install_main_branch():
     parent_folder = os.path.abspath(os.path.join(home_folder, ".."))
@@ -484,7 +556,6 @@ def install_dev_branch():
         subprocess.run(clone_command)
 
         return 'SillyTavern Dev Branch installed successfully.'
-
 
 
 # Define shared path/directory variables as global

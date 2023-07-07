@@ -11,16 +11,20 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-GB3BP9FMVW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GB3BP9FMVW"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-  gtag('config', 'G-GB3BP9FMVW');
+        function gtag() {
+            dataLayer.push(arguments);
+        }
 
-</script>
+        gtag('js', new Date());
+
+        gtag('config', 'G-GB3BP9FMVW');
+
+    </script>
 
 
 </head>
@@ -54,28 +58,53 @@
     <div class="content active" id="launch">
         <div class="sub-title"><h2>Launch</h2></div>
         <div class="button-grid">
-  <button id="launchMainBtn" onclick="launchMain()" {% if not repos_cloned.main %}disabled{% endif %}>Launch ST Main</button>
-    <button id="launchDevBtn" onclick="launchDev()" {% if not repos_cloned.dev %}disabled{% endif %}>Launch ST Dev</button>
-    <button id="launchExtrasBtn" onclick="launchExtras()" {% if not repos_cloned.extras %}disabled{% endif %}>Launch ST Extras</button>
-    <button onclick="closeSillyTavern()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Close SillyTavern</button>
-    <button onclick="editConfig()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Edit ST Config/Settings</button>
-    <button onclick="launchProfileManager()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Change ST Profile</button>
-</div>
-            <div class="sub-title"><h2>Install</h2></div>
-        <div class="button-grid">
-<button id="installMainBtn" onclick="install('mainBranch')" {% if repos_cloned.main %}disabled{% endif %}>Install Main Branch</button>
-<button id="installDevBtn" onclick="install('devBranch')" {% if repos_cloned.dev %}disabled{% endif %}>Install Dev Preview Branch</button>
-<button id="installExtrasBtn" onclick="disableButtons(); install('extras')" {% if repos_cloned.extras %}disabled{% endif %}>Install Extras</button>
+            <button id="launchMainBtn" onclick="launchMain()" {% if not repos_cloned.main %}disabled{% endif %}>Launch
+                ST Main
+            </button>
+            <button id="launchDevBtn" onclick="launchDev()" {% if not repos_cloned.dev %}disabled{% endif %}>Launch ST
+                Dev
+            </button>
+            <button id="launchExtrasBtn" onclick="launchExtras()" {% if not repos_cloned.extras %}disabled{% endif %}>
+                Launch ST Extras
+            </button>
+            <button onclick="closeSillyTavern()"
+                    {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Close SillyTavern
+            </button>
+            <button onclick="editConfig()" {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>
+                Edit ST Config/Settings
+            </button>
+            <button onclick="launchProfileManager()"
+                    {% if not repos_cloned.main and not repos_cloned.dev %}disabled{% endif %}>Change ST Profile
+            </button>
         </div>
+    <div class="installSection" id="installSection">
+        <div class="sub-title"><h2>Install</h2></div>
+        <div class="button-grid">
+            <button id="installMainBtn" onclick="install('mainBranch')" {% if repos_cloned.main %}disabled{% endif %}>
+                Install Main Branch
+            </button>
+            <button id="installDevBtn" onclick="install('devBranch')" {% if repos_cloned.dev %}disabled{% endif %}>
+                Install Dev Preview Branch
+            </button>
+            <button id="installExtrasBtn" onclick="disableButtons(); install('extras')"
+                    {% if repos_cloned.extras %}disabled{% endif %}>Install Extras
+            </button>
+        </div></div>
+    <div class="updateSection" id="updateSection">
         <div class="sub-title"><h2>Update</h2></div>
         <div class="button-grid">
-<button id="updateMainBtn" onclick="executeScript('Update SillyTavern', 'main')" {% if not repos_cloned.main %}disabled{% endif %}>Update Main Branch</button>
-<button id="updateDevBtn" onclick="executeScript('Update SillyTavern', 'dev')" {% if not repos_cloned.dev %}disabled{% endif %}>Update Dev Preview Branch</button>
-<button id="updateExtrasBtn" onclick="executeScript('Update SillyTavern', 'extras')" {% if not repos_cloned.extras %}disabled{% endif %}>Update Extras</button>
+            <button id="updateMainBtn" onclick="executeScript('Update SillyTavern', 'main')"
+                    {% if not repos_cloned.main %}disabled{% endif %}>Update Main Branch
+            </button>
+            <button id="updateDevBtn" onclick="executeScript('Update SillyTavern', 'dev')"
+                    {% if not repos_cloned.dev %}disabled{% endif %}>Update Dev Preview Branch
+            </button>
+            <button id="updateExtrasBtn" onclick="executeScript('Update SillyTavern', 'extras')"
+                    {% if not repos_cloned.extras %}disabled{% endif %}>Update Extras
+            </button>
 
+        </div></div>
     </div>
-    </div>
-
 
 
     <div class="content" id="tools">
@@ -120,72 +149,216 @@
                 Support on Patreon
             </button>
             <div class="sub-title"><h3>Current Patrons</h3></div>
-            <div class="patron-list"><ul>
-                <li><b>VIP:</b> Epic Gamer - 1 Month</li>
-            <li>Melissa - 2 Months</li>
-                <li>Evan A. - 2 Months</li>
-            </ul></div>
+            <div class="patron-list">
+                <ul>
+                    <li><b>VIP:</b> Epic Gamer - 1 Month</li>
+                    <li>Melissa - 2 Months</li>
+                    <li>Evan A. - 2 Months</li>
+                </ul>
+            </div>
         </div>
     </div>
-<div class="installed-modules">
-   <div class="row">
-  <div class="col-md-4">
-    <p>Main Branch Installed?: <span id="mainStatus">{{ repos_cloned.main }}</span></p>
-  </div>
-  <div class="col-md-4">
-    <p>Dev Preview Branch Installed?: <span id="devStatus">{{ repos_cloned.dev }}</span></p>
-  </div>
-  <div class="col-md-4">
-    <p>Extras Installed?: <span id="extrasStatus">{{ repos_cloned.extras }}</span></p>
-  </div>
-
+    <div class="installed-modules">
+<div class="row sectionToggles">
+        <div class="col-md-6">  <input type="checkbox" id="showInstallSectionCheckbox" onchange="toggleInstallSection(this)">
+  <label for="showSectionCheckbox">Show Install Section?</label></div>
+     <div class="col-md-6">
+  <input type="checkbox" id="showUpdateSectionCheckbox" onchange="toggleUpdateSection(this)">
+  <label for="showSectionCheckbox">Show Update Section?</label>
+     </div>
 </div>
-    <div class="row">
+        <div class="row">
+            <div class="col-md-4">
+                <p>Main Branch Installed?: <span id="mainStatus">{{ repos_cloned.main }}</span><br>
+                     <span class="STMUpdateStatus" id="STMUpdateStatus"></span>
+            </div>
+            <div class="col-md-4">
+                <p>Dev Preview Branch Installed?: <span id="devStatus">{{ repos_cloned.dev }}</span><br>
+                    <span class="STDUpdateStatus" id="STDUpdateStatus"></span>
+            </div>
+            <div class="col-md-4">
+                <p>Extras Installed?: <span id="extrasStatus">{{ repos_cloned.extras }}</span><br>
+                    <span class="extrasUpdateStatus" id="extrasUpdateStatus"></span>
+                </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <p></p>
+            </div>
+            <div class="col-md-4">
+                <div class="button-grid">
+                    <button style="width:355.6px;" onclick="shutdownSTSL()">☠️ Shutdown STSL ☠️</button>
+                </div>
+                <div class="col-md-4">
+                    <p></p>
+                </div>
+            </div>
+            <div class="col-md-12" style="text-align: center;"><p><span style="color:red">WARNING:</span> This will
+                shutdown, STSL, SillyTavern and ALL other node and python servers on your computer.</p></div>
+        </div>
+        <div class="col-md-12 versionNumber">Installed STSL Version: v{{ app_version }}<br>
+            <div class="updateStatus" id="updateStatus"></div>
 
-    <div class="col-md-4">
-<p></p>
-  </div>
-  <div class="col-md-4">
-    <div class="button-grid"><button style="width:355.6px;" onclick="shutdownSTSL()">☠️ Shutdown STSL ☠️</button>
-  </div>
-  <div class="col-md-4">
-      <p></p>
-  </div>
+            <a href="#" onclick="showUpdateInstructions('{{ latest_release }}')">Click here for lastest
+                version: {{ latest_release }}</a>
+        </div>
     </div>
-        <div class="col-md-12" style="text-align: center;"> <p><span style="color:red">WARNING:</span> This will shutdown, STSL, SillyTavern and ALL other node and python servers on your computer.</p></div></div>
-<div class="col-md-12 versionNumber">Installed STSL Version: v{{ app_version }}<br>
-    <div class="updateStatus" id="updateStatus"></div>
-
-          <a href="#" onclick="showUpdateInstructions('{{ latest_release }}')">Click here for lastest version: {{ latest_release }}</a>
-</div>
-</div>
 
 </div>
 
 <script>
-        var appVersion = "{{ app_version }}";
-  var latestRelease = "{{ latest_release }}";
-  var updateInstructions = "{{ update_instructions }}";
 
-  if (compareVersions(latestRelease, appVersion) > 0) {
-    var updateStatus = "New Update Available";
-    document.getElementById("updateStatus").innerText = updateStatus;
-  }
+    var appVersion = "{{ app_version }}";
+    var latestRelease = "{{ latest_release }}";
+    var updateInstructions = "{{ update_instructions }}";
 
-  function compareVersions(version1, version2) {
-      console.log(version1 + version2)
-    var v1 = version1.split(".");
-    var v2 = version2.split(".");
-    for (var i = 0; i < v1.length; i++) {
-      if (parseInt(v1[i]) > parseInt(v2[i])) {
-        return 1;
-      } else if (parseInt(v1[i]) < parseInt(v2[i])) {
-        return -1;
-      }
+    if (compareVersions(latestRelease, appVersion) > 0) {
+        var updateStatus = "New Update Available";
+        document.getElementById("updateStatus").innerText = updateStatus;
     }
-    return 0;
+
+    function compareVersions(version1, version2) {
+        console.log(version1 + version2)
+        var v1 = version1.split(".");
+        var v2 = version2.split(".");
+        for (var i = 0; i < v1.length; i++) {
+            if (parseInt(v1[i]) > parseInt(v2[i])) {
+                return 1;
+            } else if (parseInt(v1[i]) < parseInt(v2[i])) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
+    compareVersions(latestRelease, appVersion);
+
+    function toggleUpdateSection(checkbox) {
+  const section = document.getElementById('updateSection'); // Replace 'yourSectionId' with the actual ID of your section
+  const buttons = section.querySelectorAll('button');
+
+  if (checkbox.checked) {
+    section.style.display = 'block';
+    buttons.forEach(button => {
+      button.disabled = false;
+    });
+  } else {
+    section.style.display = 'none';
+    buttons.forEach(button => {
+      button.disabled = true;
+    });
   }
-compareVersions(latestRelease,appVersion);
+}
+
+    function toggleInstallSection(checkbox) {
+  const section = document.getElementById('installSection'); // Replace 'yourSectionId' with the actual ID of your section
+  if (checkbox.checked) {
+    section.style.display = 'block';
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    function disableUpdateButton(buttonId) {
+        const button = document.querySelector(buttonId);
+        if (button) {
+            button.disabled = true;
+        }
+    }
+
+    function enableUpdateButton(buttonId) {
+        const button = document.querySelector(buttonId);
+        if (button) {
+            button.disabled = false;
+        }
+    }
+
+    function checkUpdateButtons() {
+  const updateMainBtn = document.querySelector("#updateMainBtn");
+  const updateDevBtn = document.querySelector("#updateDevBtn");
+  const updateExtrasBtn = document.querySelector("#updateExtrasBtn");
+  const updateSection = document.querySelector(".updateSection");
+
+  if (
+    updateMainBtn.disabled &&
+    updateDevBtn.disabled &&
+    updateExtrasBtn.disabled
+  ) {
+    updateSection.style.display = "none";
+  } else {
+    updateSection.style.display = "block";
+  }
+}
+
+    function checkInstallButtons() {
+  const installMainBtn = document.querySelector("#installMainBtn");
+  const installDevBtn = document.querySelector("#installDevBtn");
+  const installExtrasBtn = document.querySelector("#installExtrasBtn");
+  const installSection = document.querySelector(".installSection");
+
+  if (
+    installMainBtn.disabled &&
+    installDevBtn.disabled &&
+    installExtrasBtn.disabled
+  ) {
+    installSection.style.display = "none";
+  } else {
+    installSection.style.display = "block";
+  }
+}
+
+    //Check main is up to date
+    var installedVersionSTM = "{{ STM_version }}";
+    var currentVersionSTM = "{{ latest_releaseSTmain }}";
+
+    if (installedVersionSTM === currentVersionSTM) {
+        {#console.log("ST Extras is up to date");#}
+        document.getElementById("STMUpdateStatus").innerText = "Main up to date, V:" + installedVersionSTM;
+        disableUpdateButton("#updateMainBtn");
+        checkUpdateButtons();
+    } else {
+        {#console.log("ST Extras has a new release");#}
+        document.getElementById("STMUpdateStatus").innerText = "Main has a new release, V:" + currentVersionSTM + " > V:" + installedVersionSTM;
+        enableUpdateButton("#updateMainBtn");
+    }
+
+    //Check dev is up to date
+    var installedVersionSTD = "{{ STD_version }}";
+    var currentVersionSTD = "{{ latest_releaseSTdev }}";
+
+    if (installedVersionSTD === currentVersionSTD) {
+        {#console.log("ST Extras is up to date");#}
+        document.getElementById("STDUpdateStatus").innerText = "Dev up to date, V:" + installedVersionSTD;
+        disableUpdateButton("#updateDevBtn");
+        checkUpdateButtons();
+    } else {
+        {#console.log("ST Extras has a new release");#}
+        document.getElementById("STDUpdateStatus").innerText = "Dev has a new release, V:" + currentVersionSTD + " > V:" + installedVersionSTD;
+        disableUpdateButton("#updateDevBtn");
+    }
+
+//Check Extras is up to date
+    var installedVersion = "{{ STE_version }}";
+    var currentVersion = "{{ latest_releaseSTextras }}";
+
+    if (installedVersion === currentVersion) {
+        {#console.log("ST Extras is up to date");#}
+        document.getElementById("extrasUpdateStatus").innerText = "ST Extras is up to date";
+        disableUpdateButton("#updateExtrasBtn");
+        checkUpdateButtons();
+    } else {
+        {#console.log("ST Extras has a new release");#}
+        document.getElementById("extrasUpdateStatus").innerText = "ST Extras has a new release";
+        disableUpdateButton("#updateExtrasBtn");
+    }
+    checkUpdateButtons();
+    checkInstallButtons();
+});
 </script>
 <!--<pre id="console-output"></pre>
   <script>
