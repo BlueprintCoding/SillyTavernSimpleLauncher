@@ -131,9 +131,6 @@ def index():
     sillytavern_extras_path = os.path.join(parent_folder, "SillyTavern-extras")
     sillytavern_extras_exists = os.path.exists(sillytavern_extras_path)
 
-    # Check if repositories are cloned
-    repos_cloned = check_repos_cloned()
-
     # Get latest repo release number
     def get_latest_release():
         url = "https://api.github.com/repos/BlueprintCoding/SillyTavernSimpleLauncher/releases/latest"
@@ -156,7 +153,6 @@ def index():
             return version
         else:
             return None
-
     latest_releaseSTmain = get_latest_release_st()
 
     def get_dev_branch_version():
@@ -168,7 +164,6 @@ def index():
             return version
         else:
             return None
-
     latest_releaseSTdev = get_dev_branch_version()
 
     def get_st_version_from_package_json(folder_path):
@@ -180,8 +175,6 @@ def index():
             version = data.get('version')
         return version
 
-    STM_version = get_st_version_from_package_json(sillytavern_main_path)
-    STD_version = get_st_version_from_package_json(sillytavern_dev_path)
 
     def get_extras_installed_version(folder_path):
         try:
@@ -199,8 +192,6 @@ def index():
             # Git command failed, return None indicating version is not available
             return None
 
-    STE_version1 = get_extras_installed_version(sillytavern_extras_path)
-    STE_version  = STE_version1.lstrip("main-")
 
     def get_installed_version_github_api():
         url = f"https://api.github.com/repos/SillyTavern/SillyTavern-extras/commits/main"
@@ -214,6 +205,29 @@ def index():
             return None
 
     latest_releaseSTextras = get_installed_version_github_api()
+    
+                # Existing check for cloned repositories
+    repos_cloned = check_repos_cloned()
+
+#    Only attempt to get versions if the repos exist
+    if repos_cloned['main']:
+        print("main exists")
+        STM_version = get_st_version_from_package_json(sillytavern_main_path)
+    else:
+        STM_version = None
+
+    if repos_cloned['dev']:
+        print("Dev exists")
+        STD_version = get_st_version_from_package_json(sillytavern_dev_path)
+    else:
+        STD_version = None
+
+    if repos_cloned['extras']:
+        print("extras exists")
+        STE_version1 = get_extras_installed_version(sillytavern_extras_path)
+        STE_version  = STE_version1.lstrip("main-") if STE_version1 else None  # Added a check for None before calling lstrip
+    else:
+        STE_version = None
 
     return render_template('index.html', repos_cloned=repos_cloned, app_version=APP_VERSION,
                            latest_release=latest_release, latest_releaseSTmain=latest_releaseSTmain,latest_releaseSTdev=latest_releaseSTdev,latest_releaseSTextras=latest_releaseSTextras,
