@@ -1,9 +1,12 @@
+## IF YOU ARE UPDATING TO THE NEWEST RELEASE TO USE THE RELEASE AND STAGING BRANCHES READ THE TUTORIAL BELOW BEFORE UPDATING!!!!!!!!!!!
+![url](https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/blob/main/STSL%20to%20new%20branches%20instructions.pdf) 
+
 # SillyTavernSimpleLauncher
 A GUI launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
 
 UPDATED README COMING SOON!
 
-For now just use "Install STSL.ps1" for the first run/install. You may have to run it twice if you get errors. Right click and run in powershell. It will ask for admin permissions
+For now just use "Install STSL.bat" for the first run/install. You may have to run it twice if you get errors. Right click and run in powershell. It will ask for admin permissions
 
 After that just use "Start STSL.bat" to start the STSL.
 
