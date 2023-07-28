@@ -143,9 +143,9 @@ def index():
 
     latest_release = get_latest_release()
 
-    # Get latest repo ST Main release number
+    # Get latest repo ST release release number
     def get_latest_release_st():
-        url = "https://raw.githubusercontent.com/SillyTavern/SillyTavern/main/package-lock.json"
+        url = "https://raw.githubusercontent.com/SillyTavern/SillyTavern/release/package-lock.json"
         response = requests.get(url)
         if response.status_code == 200:
             package_lock_data = json.loads(response.text)
@@ -156,7 +156,7 @@ def index():
     latest_releaseSTmain = get_latest_release_st()
 
     def get_dev_branch_version():
-        url = "https://raw.githubusercontent.com/SillyTavern/SillyTavern/dev/package-lock.json"
+        url = "https://raw.githubusercontent.com/SillyTavern/SillyTavern/staging/package-lock.json"
         response = requests.get(url)
         if response.status_code == 200:
             package_lock_data = json.loads(response.text)
@@ -194,7 +194,7 @@ def index():
 
 
     def get_installed_version_github_api():
-        url = f"https://api.github.com/repos/SillyTavern/SillyTavern-extras/commits/main"
+        url = f"https://api.github.com/repos/SillyTavern/SillyTavern-extras/commits/release"
         headers = {"Accept": "application/vnd.github.v3+json"}
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
@@ -548,7 +548,7 @@ def install_main_branch():
     else:
         # Clone SillyTavern repository
         clone_command = [
-            "git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "main", sillytavern_path
+            "git", "clone", "https://github.com/SillyTavern/SillyTavern", "-b", "release", sillytavern_path
         ]
         subprocess.run(clone_command)
         return 'SillyTavern Main Branch installed successfully.'
@@ -565,7 +565,7 @@ def install_dev_branch():
     else:
         # Clone SillyTavern repository
         clone_command = [
-            "git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "dev", sillytaverndev_path
+            "git", "clone", "https://github.com/SillyTavern/SillyTavern.git", "-b", "staging", sillytaverndev_path
         ]
         subprocess.run(clone_command)
 

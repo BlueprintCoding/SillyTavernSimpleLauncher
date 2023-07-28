@@ -59,10 +59,10 @@
         <div class="sub-title"><h2>Launch</h2></div>
         <div class="button-grid">
             <button id="launchMainBtn" onclick="launchMain()" {% if not repos_cloned.main %}disabled{% endif %}>Launch
-                ST Main
+                ST Release
             </button>
             <button id="launchDevBtn" onclick="launchDev()" {% if not repos_cloned.dev %}disabled{% endif %}>Launch ST
-                Dev
+                Staging
             </button>
             <button id="launchExtrasBtn" onclick="launchExtras()" {% if not repos_cloned.extras %}disabled{% endif %}>
                 Launch ST Extras
@@ -81,10 +81,10 @@
         <div class="sub-title"><h2>Install</h2></div>
         <div class="button-grid">
             <button id="installMainBtn" onclick="install('mainBranch')" {% if repos_cloned.main %}disabled{% endif %}>
-                Install Main Branch
+                Install Release Branch
             </button>
             <button id="installDevBtn" onclick="install('devBranch')" {% if repos_cloned.dev %}disabled{% endif %}>
-                Install Dev Preview Branch
+                Install Staging Branch
             </button>
             <button id="installExtrasBtn" onclick="disableButtons(); install('extras')"
                     {% if repos_cloned.extras %}disabled{% endif %}>Install Extras
@@ -94,10 +94,10 @@
         <div class="sub-title"><h2>Update</h2></div>
         <div class="button-grid">
             <button id="updateMainBtn" onclick="executeScript('Update SillyTavern', 'main')"
-                    {% if not repos_cloned.main %}disabled{% endif %}>Update Main Branch
+                    {% if not repos_cloned.main %}disabled{% endif %}>Update Release Branch
             </button>
             <button id="updateDevBtn" onclick="executeScript('Update SillyTavern', 'dev')"
-                    {% if not repos_cloned.dev %}disabled{% endif %}>Update Dev Preview Branch
+                    {% if not repos_cloned.dev %}disabled{% endif %}>Update Staging Branch
             </button>
             <button id="updateExtrasBtn" onclick="executeScript('Update SillyTavern', 'extras')"
                     {% if not repos_cloned.extras %}disabled{% endif %}>Update Extras
@@ -169,11 +169,11 @@
 </div>
         <div class="row">
             <div class="col-md-4">
-                <p>Main Branch Installed?: <span id="mainStatus">{{ repos_cloned.main }}</span><br>
+                <p>Release Branch Installed?: <span id="mainStatus">{{ repos_cloned.main }}</span><br>
                      <span class="STMUpdateStatus" id="STMUpdateStatus"></span>
             </div>
             <div class="col-md-4">
-                <p>Dev Preview Branch Installed?: <span id="devStatus">{{ repos_cloned.dev }}</span><br>
+                <p>Staging Branch Installed?: <span id="devStatus">{{ repos_cloned.dev }}</span><br>
                     <span class="STDUpdateStatus" id="STDUpdateStatus"></span>
             </div>
             <div class="col-md-4">
