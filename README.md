@@ -2,7 +2,7 @@
 ![url](https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/blob/main/STSL%20to%20new%20branches%20instructions.pdf) 
 
 # SillyTavernSimpleLauncher
-A GUI launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
+A GUI launcher that lets you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
 
 UPDATED README COMING SOON!
 
