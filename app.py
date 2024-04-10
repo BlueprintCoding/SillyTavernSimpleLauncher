@@ -766,7 +766,7 @@ def backup_sillytavern_files():
     datestamp = datetime.now().strftime('%Y%m%d')  # Format: YYYYMMDD
 
     # Backup from SillyTavern-MainBranch
-    main_branch = os.path.join(parent_folder, 'SillyTavern-MainBranch\public')
+    main_branch = os.path.join(parent_folder, 'SillyTavern-MainBranch', 'public')
     main_destination_folder = os.path.join(backup_folder, 'MainBranch', f'{datestamp}_{timestamp}')
     if os.path.exists(main_branch):
         os.makedirs(main_destination_folder)
@@ -789,7 +789,7 @@ def backup_sillytavern_files():
         print('MainBranch folder does not exist. Skipping backup from MainBranch.')
 
     # Backup from SillyTavern-DevBranch
-    dev_branch = os.path.join(parent_folder, 'SillyTavern-DevBranch\public')
+    dev_branch = os.path.join(parent_folder, 'SillyTavern-DevBranch', 'public')
     dev_destination_folder = os.path.join(backup_folder, 'DevBranch', f'{datestamp}_{timestamp}')
     if os.path.exists(dev_branch):
         os.makedirs(dev_destination_folder)
