@@ -117,11 +117,10 @@ REM Open the browser to localhost:6969
 echo Opening the browser...
 start "" "http://localhost:6969"
 
-
 REM Start the listener to check if Flask server is closed
 echo Starting listener...
 start "" cmd /c "call :CheckFlaskServerClosed"
-exit /b
+goto :eof
 
 :CheckFlaskServerClosed
 timeout /t 1 >nul
@@ -131,8 +130,3 @@ if errorlevel 1 (
     exit
 )
 goto :CheckFlaskServerClosed
-
-REM Pause the script
-pause
-
-
