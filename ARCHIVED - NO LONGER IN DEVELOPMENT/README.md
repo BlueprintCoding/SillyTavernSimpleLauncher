@@ -1,24 +1,24 @@
-## IF YOU ARE UPDATING TO THE NEWEST RELEASE TO USE THE RELEASE AND STAGING BRANCHES READ THE TUTORIAL BELOW BEFORE UPDATING!!!!!!!!!!!
-![url](https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/blob/main/STSL%20to%20new%20branches%20instructions.pdf) 
+## THIS LAUNCHER IS NO LONGER IN DEVELOPMENT PLEASE USE THE NEW SILLYTAVERN LAUNCHER LINKED BELOW!!!!!!!!!!!
+![Silly Tavern Launcher Github](https://github.com/SillyTavern/SillyTavern-Launcher) 
 
-# SillyTavernSimpleLauncher
-A GUI launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras
+~~# SillyTavernSimpleLauncher
+A GUI launcher that let's you install, uninstall, update, backup and uninstall SillyTavern and SillyTavernExtras~~
 
-UPDATED README COMING SOON!
+~~UPDATED README COMING SOON!~~
 
-For now just use "Install STSL.bat" for the first run/install. You may have to run it twice if you get errors. Right click and run in powershell. It will ask for admin permissions
+~~For now just use "Install STSL.bat" for the first run/install. You may have to run it twice if you get errors. Right click and run in powershell. It will ask for admin permissions~~
 
-After that just use "Start STSL.bat" to start the STSL.
+~~After that just use "Start STSL.bat" to start the STSL.~~
 
 
-## IF YOU PLAN ON USING INSTALLING AND USING EXTRAS READ THIS.
+~~## IF YOU PLAN ON USING INSTALLING AND USING EXTRAS READ THIS.~~
 
-Extras requires visual studios build tools to be installed. 
+~~Extras requires visual studios build tools to be installed. 
 Download this, install it. https://visualstudio.microsoft.com/visual-cpp-build-tools/
 Then check this and install. Once that installs you'll need to delete your extras folder and install it again with the launcher. 
-![image](https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/assets/130100872/34543b99-bd11-4a72-897c-556c80136aca)
+![image](https://github.com/BlueprintCoding/SillyTavernSimpleLauncher/assets/130100872/34543b99-bd11-4a72-897c-556c80136aca)~~
 
-I'll try to automate this in the future but I'm not positive it can be automatically installed.
+~~I'll try to automate this in the future but I'm not positive it can be automatically installed.~~
 
 
-This comes with no warranty or guarantees. Use this free installer at your own risk
+~~This comes with no warranty or guarantees. Use this free installer at your own risk~~
